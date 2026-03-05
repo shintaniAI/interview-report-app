@@ -79,7 +79,7 @@ ${memo || "なし"}
 - positivesは文字列の配列で返してください
 - JSONのみを出力し、それ以外のテキストは含めないでください`;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
     const result = await model.generateContent(prompt);
     const text = result.response.text();
 

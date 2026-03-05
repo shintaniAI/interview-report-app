@@ -17,7 +17,7 @@ export async function GET() {
   // 2. Try Gemini API call
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
     const result = await model.generateContent("Say hello in Japanese. Reply with just the greeting.");
     const text = result.response.text();
     results.geminiResponse = text;
