@@ -95,33 +95,7 @@ ${memo || "なし"}
     return NextResponse.json({ success: true, report });
   } catch (error) {
     console.error("Report generation error:", error);
-
     const errorMessage = error instanceof Error ? error.message : String(error);
-
-    // API key missing
-    if (!process.env.GEMINI_API_KEY) {
-      return NextResponse.json(
-        { success: false, error: "GEMINI_API_KEYが設定されていません。" },
-        { status: 500 }
-      );
-    }
-
-    // Gemini API error
-    if (errorMessage.includes("API key") || errorMessage.includes("401") || errorMessage.includes("403")) {
-      return NextResponse.json(
-        { success: false, error: "APIキーが無効です。正しいGemini APIキーを設定してください。" },
-        { status: 500 }
-      );
-    }
-
-    // JSON parse error
-    if (errorMessage.includes("JSON") || errorMessage.includes("Unexpected token")) {
-      return NextResponse.json(
-        { success: false, error: "AIからの応答の解析に失敗しました。もう一度お試しください。" },
-        { status: 500 }
-      );
-    }
-
     return NextResponse.json(
       { success: false, error: `レポート生成に失敗しました: ${errorMessage}` },
       { status: 500 }
