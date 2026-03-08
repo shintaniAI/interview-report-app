@@ -28,7 +28,7 @@ export default function InputForm({ form, error, onUpdateForm, onSubmit, onShowH
           {onShowHistory && (
             <button onClick={onShowHistory}
               className="mt-3 inline-flex items-center gap-1.5 text-orange-600 hover:text-orange-700 text-sm font-medium transition-colors cursor-pointer">
-              📂 レポート履歴を見る
+              レポート履歴を見る
             </button>
           )}
         </div>
@@ -37,12 +37,12 @@ export default function InputForm({ form, error, onUpdateForm, onSubmit, onShowH
           <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-5 py-4 rounded-r-lg mb-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-red-500 text-lg">⚠</span>
+                <span className="text-red-500 text-lg font-bold">!</span>
                 <span>{error}</span>
               </div>
               <button onClick={onSubmit}
                 className="px-4 py-1.5 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors cursor-pointer shrink-0 ml-3">
-                🔄 リトライ
+                リトライ
               </button>
             </div>
           </div>
@@ -151,7 +151,7 @@ export default function InputForm({ form, error, onUpdateForm, onSubmit, onShowH
 
           <button onClick={onSubmit}
             className="w-full bg-gradient-to-r from-orange-500 to-rose-500 text-white py-3.5 rounded-xl font-semibold hover:from-orange-600 hover:to-rose-600 transition-all shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 active:scale-[0.99] cursor-pointer">
-            📋 レポートを生成する
+            レポートを生成する
           </button>
         </div>
 

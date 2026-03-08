@@ -8,12 +8,12 @@ export const SCORE_LABELS: Record<string, string> = {
 };
 
 export const SCORE_ICONS: Record<string, string> = {
-  engagement: "💪",
-  workAdaptation: "🔧",
-  wlb: "⚖️",
-  expectationGap: "🎯",
-  turnoverRisk: "🔒",
-  growth: "🌱",
+  engagement: "",
+  workAdaptation: "",
+  wlb: "",
+  expectationGap: "",
+  turnoverRisk: "",
+  growth: "",
 };
 
 export const GRADE_COLORS: Record<string, string> = {

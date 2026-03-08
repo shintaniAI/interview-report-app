@@ -36,7 +36,7 @@ export default function IssueCard({ issue, index, severity, onUpdateIssue, onUpd
 
       {isOpen && issue.improvements && (
         <div className="border-t border-gray-100 bg-gradient-to-br from-orange-50/50 to-amber-50/50 p-5 space-y-4">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">💡 改善施策</p>
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">改善施策</p>
           {issue.improvements.map((imp, j) => (
             <div key={j} className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm space-y-3">
               <div className="flex items-center gap-2 mb-1">

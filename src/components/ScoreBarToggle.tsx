@@ -48,7 +48,7 @@ export default function ScoreBarToggle({ label, score, comment, icon, evidence, 
 
       {isOpen && evidence && evidence.length > 0 && (
         <div className="bg-gradient-to-br from-gray-50 to-orange-50/30 border-t border-gray-100 px-5 py-4 space-y-3">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">📋 評価の根拠</p>
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">評価の根拠</p>
           {evidence.map((ev, i) => (
             <div key={i} className="bg-white rounded-lg p-4 border border-gray-100 shadow-sm">
               <div className="flex items-start gap-2 mb-2">

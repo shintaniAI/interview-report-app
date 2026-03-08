@@ -34,23 +34,33 @@ export default function ReportView({
     const element = reportRef.current;
     if (!element) return;
 
-    element.setAttribute("data-pdf-export", "true");
-    const noPrintEls = element.querySelectorAll(".no-print");
-    noPrintEls.forEach((el) => (el as HTMLElement).style.display = "none");
+    try {
+      element.setAttribute("data-pdf-export", "true");
+      const noPrintEls = element.querySelectorAll(".no-print");
+      noPrintEls.forEach((el) => (el as HTMLElement).style.display = "none");
 
-    const html2pdf = (await import("html2pdf.js")).default;
-    const opt = {
-      margin: [10, 10, 10, 10] as [number, number, number, number],
-      filename: `面談レポート_${form.candidateName}_${form.interviewDate || "日付未設定"}.pdf`,
-      image: { type: "jpeg" as const, quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: "mm" as const, format: "a4" as const, orientation: "portrait" as const },
-    };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const html2pdfModule = await import("html2pdf.js") as any;
+      const html2pdf = html2pdfModule.default || html2pdfModule;
+      const opt = {
+        margin: [10, 10, 10, 10] as [number, number, number, number],
+        filename: `面談レポート_${form.candidateName}_${form.interviewDate || "日付未設定"}.pdf`,
+        image: { type: "jpeg" as const, quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: "mm" as const, format: "a4" as const, orientation: "portrait" as const },
+      };
 
-    await html2pdf().set(opt).from(element).save();
+      await html2pdf().set(opt).from(element).save();
 
-    element.removeAttribute("data-pdf-export");
-    noPrintEls.forEach((el) => (el as HTMLElement).style.display = "");
+      element.removeAttribute("data-pdf-export");
+      noPrintEls.forEach((el) => (el as HTMLElement).style.display = "");
+    } catch (err) {
+      console.error("PDF export failed:", err);
+      alert("PDF保存に失敗しました: " + (err instanceof Error ? err.message : String(err)));
+      element.removeAttribute("data-pdf-export");
+      const noPrintEls = element.querySelectorAll(".no-print");
+      noPrintEls.forEach((el) => (el as HTMLElement).style.display = "");
+    }
   }, [form.candidateName, form.interviewDate]);
 
   const handleSave = useCallback(async () => {
@@ -86,11 +96,11 @@ export default function ReportView({
           </button>
           <button onClick={handlePdfExport}
             className="px-6 py-2.5 bg-gradient-to-r from-rose-500 to-rose-600 text-white rounded-xl font-medium hover:from-rose-600 hover:to-rose-700 transition-all shadow-lg shadow-rose-500/25 cursor-pointer">
-            📄 PDF保存
+            PDF保存
           </button>
           <button onClick={handleSave} disabled={saving}
             className="px-6 py-2.5 bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-xl font-medium hover:from-teal-600 hover:to-teal-700 transition-all shadow-lg shadow-teal-500/25 cursor-pointer disabled:opacity-50">
-            {saving ? "保存中..." : "💾 レポートを保存"}
+            {saving ? "保存中..." : "レポートを保存"}
           </button>
           {saveResult && (
             <span className={`self-center text-sm font-medium ${saveResult.includes("✓") ? "text-teal-600" : "text-red-500"}`}>
@@ -139,7 +149,7 @@ export default function ReportView({
           {r.radarScores && (
             <div>
               <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-                <span className="w-7 h-7 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 text-xs">⬡</span>
+                <span className="w-7 h-7 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 text-xs font-bold">1</span>
                 総合マッチ度
               </h2>
               <div className="bg-gradient-to-br from-gray-50 to-orange-50/30 rounded-xl p-6 border border-gray-100">
@@ -151,7 +161,7 @@ export default function ReportView({
           {/* Scores */}
           <div>
             <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-              <span className="w-7 h-7 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 text-xs">📊</span>
+              <span className="w-7 h-7 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 text-xs font-bold">2</span>
               スコア一覧
               <span className="text-xs text-gray-400 font-normal ml-2">クリックで評価の根拠を表示</span>
             </h2>
@@ -166,7 +176,7 @@ export default function ReportView({
           {/* Summary */}
           <div>
             <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-              <span className="w-7 h-7 bg-teal-100 rounded-lg flex items-center justify-center text-teal-600 text-xs">📝</span>
+              <span className="w-7 h-7 bg-teal-100 rounded-lg flex items-center justify-center text-teal-600 text-xs font-bold">3</span>
               面談サマリー
             </h2>
             <textarea value={r.summary} onChange={(e) => onUpdateReportField("summary", e.target.value)}
@@ -175,15 +185,15 @@ export default function ReportView({
 
           {/* Detail Sections */}
           {[
-            { key: "retention", title: "定着・モチベーション状況", icon: "🔥" },
-            { key: "workAdaptation", title: "業務適応状況", icon: "🔧" },
-            { key: "workLifeBalance", title: "ワークライフバランス", icon: "⚖️" },
-            { key: "compensationConcerns", title: "評価・給与への理解や不安", icon: "💰" },
-            { key: "relationships", title: "人間関係・コミュニケーション", icon: "🤝" },
+            { key: "retention", title: "定着・モチベーション状況", icon: "A" },
+            { key: "workAdaptation", title: "業務適応状況", icon: "B" },
+            { key: "workLifeBalance", title: "ワークライフバランス", icon: "C" },
+            { key: "compensationConcerns", title: "評価・給与への理解や不安", icon: "D" },
+            { key: "relationships", title: "人間関係・コミュニケーション", icon: "E" },
           ].map(({ key, title, icon }) => (
             <div key={key}>
               <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-                <span className="w-7 h-7 bg-gray-100 rounded-lg flex items-center justify-center text-xs">{icon}</span>
+                <span className="w-7 h-7 bg-gray-100 rounded-lg flex items-center justify-center text-xs font-bold text-gray-600">{icon}</span>
                 {title}
               </h2>
               <textarea value={(r as unknown as Record<string, unknown>)[key] as string}
@@ -195,7 +205,7 @@ export default function ReportView({
           {/* Positives */}
           <div>
             <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-              <span className="w-7 h-7 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-600 text-xs">✨</span>
+              <span className="w-7 h-7 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-600 text-xs font-bold">+</span>
               良かった点・強み
             </h2>
             <ul className="space-y-2.5">
@@ -212,7 +222,7 @@ export default function ReportView({
           {/* Issues */}
           <div>
             <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <span className="w-7 h-7 bg-rose-100 rounded-lg flex items-center justify-center text-rose-600 text-xs">🔍</span>
+              <span className="w-7 h-7 bg-rose-100 rounded-lg flex items-center justify-center text-rose-600 text-xs font-bold">!</span>
               課題と改善策
             </h2>
             <div className="space-y-5">
