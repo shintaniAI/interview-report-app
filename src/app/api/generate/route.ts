@@ -47,11 +47,50 @@ ${memo || "なし"}
 {
   "summary": "面談全体のサマリー（3〜5文で簡潔に）",
   "scores": {
-    "engagement": { "score": 1-5の数値, "comment": "一言コメント" },
-    "workAdaptation": { "score": 1-5の数値, "comment": "一言コメント" },
-    "wlb": { "score": 1-5の数値, "comment": "一言コメント" },
-    "expectationGap": { "score": 1-5の数値, "comment": "一言コメント" },
-    "turnoverRisk": { "score": 1-5の数値(高いほどリスク低い), "comment": "一言コメント" }
+    "engagement": {
+      "score": 1-5の数値,
+      "comment": "一言コメント",
+      "evidence": [
+        {
+          "question": "この評価に関連する質問や話題",
+          "quote": "面談中の実際の発言を引用（なるべく原文のまま）",
+          "interpretation": "この発言からどう評価したかの解釈"
+        }
+      ]
+    },
+    "workAdaptation": {
+      "score": 1-5の数値,
+      "comment": "一言コメント",
+      "evidence": [同上の形式]
+    },
+    "wlb": {
+      "score": 1-5の数値,
+      "comment": "一言コメント",
+      "evidence": [同上の形式]
+    },
+    "expectationGap": {
+      "score": 1-5の数値,
+      "comment": "一言コメント",
+      "evidence": [同上の形式]
+    },
+    "turnoverRisk": {
+      "score": 1-5の数値(高いほどリスク低い),
+      "comment": "一言コメント",
+      "evidence": [同上の形式]
+    },
+    "growth": {
+      "score": 1-5の数値,
+      "comment": "一言コメント",
+      "evidence": [同上の形式]
+    }
+  },
+  "radarScores": {
+    "engagement": 1-5の数値,
+    "workAdaptation": 1-5の数値,
+    "wlb": 1-5の数値,
+    "expectationGap": 1-5の数値,
+    "turnoverRisk": 1-5の数値,
+    "growth": 1-5の数値
   },
   "overallGrade": "A or B or C",
   "overallGradeReason": "総合評価の理由（1〜2文）",
@@ -60,23 +99,34 @@ ${memo || "なし"}
   "workLifeBalance": "ワークライフバランスの状況（2〜4文）",
   "compensationConcerns": "評価・給与への理解や不安（2〜4文）",
   "relationships": "人間関係やコミュニケーション面の状況（2〜4文）",
-  "positives": "良かった点・強み（箇条書き3〜5項目、配列）",
-  "nextActions": [
+  "positives": ["良かった点・強み（箇条書き3〜5項目、配列）"],
+  "issues": [
     {
-      "action": "具体的なアクション内容",
-      "assignee": "担当者",
-      "deadline": "期限の目安",
-      "method": "確認方法"
+      "issue": "特定された課題（具体的に）",
+      "quote": "課題の根拠となる面談中の発言",
+      "severity": "high or medium or low",
+      "improvements": [
+        {
+          "action": "具体的な改善施策（シート作成、定例MTG設計、仕組み化など）",
+          "owner": "実施担当者",
+          "timeline": "実施時期・頻度",
+          "method": "具体的な実施方法・手順",
+          "expectedOutcome": "期待される効果"
+        }
+      ]
     }
   ]
 }
 
 注意事項:
-- 事実と推測を明確に分けてください
+- evidenceのquoteは面談の文字起こしから実際の発言を引用してください。「」で囲って原文に近い形で記載
+- 各スコアのevidenceは1〜3件程度記載してください
+- issuesは面談から読み取れる課題を2〜5件抽出し、それぞれに具体的な改善策を提示してください
+- 改善策は「シートを作成する」「週次MTGを設ける」「1on1の頻度を変える」など仕組みとして実行可能なレベルで具体化してください
+- radarScoresは6項目すべて1-5の数値で記載（レーダーチャート描画用）
+- growthは「成長意欲・キャリア展望」として評価してください
 - スコアは1(懸念)〜5(良好)で評価してください
 - 総合評価はA(概ね順調)、B(要フォロー)、C(早期対応推奨)で判定してください
-- 次アクションは3件提案してください
-- positivesは文字列の配列で返してください
 - JSONのみを出力し、それ以外のテキストは含めないでください`;
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
