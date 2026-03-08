@@ -103,7 +103,7 @@ export default function ReportView({
           {/* Header */}
           <div className="border-b border-gray-100 pb-5">
             <div className="flex items-center gap-3 mb-3">
-              <img src="/logo-202.svg" alt="202" className="h-8" />
+              <img src="/logo-202.png" alt="202" className="h-8" />
               <h1 className="text-2xl font-bold text-gray-800">入社後面談レポート</h1>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">

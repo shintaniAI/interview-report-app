@@ -19,7 +19,7 @@ export default function InputForm({ form, error, onUpdateForm, onSubmit, onShowH
       <div className="max-w-3xl mx-auto py-10 px-4">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <img src="/logo-202.svg" alt="202" className="h-10" />
+            <img src="/logo-202.png" alt="202" className="h-10" />
           </div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
             入社後面談レポート作成
