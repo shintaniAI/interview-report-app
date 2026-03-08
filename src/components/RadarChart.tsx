@@ -37,9 +37,9 @@ export default function RadarChart({ scores, forPdf = false }: RadarChartProps) 
           const p = getPoint(i, 5);
           return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="#d1d5db" strokeWidth={0.8} />;
         })}
-        <path d={dataPath} fill="rgba(79, 70, 229, 0.15)" stroke="#4f46e5" strokeWidth={2.5} />
+        <path d={dataPath} fill="rgba(234, 88, 12, 0.15)" stroke="#ea580c" strokeWidth={2.5} />
         {dataPoints.map((p, i) => (
-          <circle key={i} cx={p.x} cy={p.y} r={4} fill="#4f46e5" stroke="white" strokeWidth={2} />
+          <circle key={i} cx={p.x} cy={p.y} r={4} fill="#ea580c" stroke="white" strokeWidth={2} />
         ))}
         {RADAR_LABELS.map((l, i) => {
           const p = getPoint(i, 6.2);
@@ -52,7 +52,7 @@ export default function RadarChart({ scores, forPdf = false }: RadarChartProps) 
         {RADAR_LABELS.map((l, i) => {
           const p = getPoint(i, (scores[l.key] || 0) + 0.7);
           return (
-            <text key={`v-${i}`} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle" className="text-[11px] fill-indigo-600 font-bold">
+            <text key={`v-${i}`} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle" className="text-[11px] fill-orange-600 font-bold">
               {scores[l.key] || 0}
             </text>
           );

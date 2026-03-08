@@ -5,9 +5,10 @@ import type { Report, FormData, Improvement } from "@/types";
 import InputForm from "@/components/InputForm";
 import LoadingScreen from "@/components/LoadingScreen";
 import ReportView from "@/components/ReportView";
+import ReportHistory from "@/components/ReportHistory";
 
 export default function Home() {
-  const [step, setStep] = useState<"input" | "loading" | "report">("input");
+  const [step, setStep] = useState<"input" | "loading" | "report" | "history">("input");
   const [report, setReport] = useState<Report | null>(null);
   const [error, setError] = useState("");
   const abortRef = useRef<AbortController | null>(null);
@@ -105,6 +106,10 @@ export default function Home() {
     setEditableReport((prev) => (prev ? { ...prev, issues: newIssues } : prev));
   };
 
+  if (step === "history") {
+    return <ReportHistory onBack={() => setStep("input")} />;
+  }
+
   if (step === "input") {
     return (
       <InputForm
@@ -112,6 +117,7 @@ export default function Home() {
         error={error}
         onUpdateForm={updateForm}
         onSubmit={handleSubmit}
+        onShowHistory={() => setStep("history")}
       />
     );
   }

@@ -35,12 +35,12 @@ export default function IssueCard({ issue, index, severity, onUpdateIssue, onUpd
       </button>
 
       {isOpen && issue.improvements && (
-        <div className="border-t border-gray-100 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 p-5 space-y-4">
+        <div className="border-t border-gray-100 bg-gradient-to-br from-orange-50/50 to-amber-50/50 p-5 space-y-4">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">💡 改善施策</p>
           {issue.improvements.map((imp, j) => (
             <div key={j} className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm space-y-3">
               <div className="flex items-center gap-2 mb-1">
-                <span className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                <span className="bg-gradient-to-r from-orange-500 to-rose-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
                   施策 {j + 1}
                 </span>
               </div>
@@ -48,27 +48,27 @@ export default function IssueCard({ issue, index, severity, onUpdateIssue, onUpd
                 <div className="md:col-span-2">
                   <label className="text-xs font-medium text-gray-400 uppercase tracking-wide">改善アクション</label>
                   <input type="text" value={imp.action} onChange={(e) => onUpdateImprovement(index, j, "action", e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 mt-1 text-gray-700 bg-white/80 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 mt-1 text-gray-700 bg-white/80 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-400" />
                 </div>
                 <div>
                   <label className="text-xs font-medium text-gray-400 uppercase tracking-wide">担当者</label>
                   <input type="text" value={imp.owner} onChange={(e) => onUpdateImprovement(index, j, "owner", e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 mt-1 text-gray-700 bg-white/80 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 mt-1 text-gray-700 bg-white/80 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-400" />
                 </div>
                 <div>
                   <label className="text-xs font-medium text-gray-400 uppercase tracking-wide">時期・頻度</label>
                   <input type="text" value={imp.timeline} onChange={(e) => onUpdateImprovement(index, j, "timeline", e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 mt-1 text-gray-700 bg-white/80 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 mt-1 text-gray-700 bg-white/80 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-400" />
                 </div>
                 <div className="md:col-span-2">
                   <label className="text-xs font-medium text-gray-400 uppercase tracking-wide">具体的な実施方法</label>
                   <input type="text" value={imp.method} onChange={(e) => onUpdateImprovement(index, j, "method", e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 mt-1 text-gray-700 bg-white/80 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 mt-1 text-gray-700 bg-white/80 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-400" />
                 </div>
                 <div className="md:col-span-2">
                   <label className="text-xs font-medium text-gray-400 uppercase tracking-wide">期待される効果</label>
                   <input type="text" value={imp.expectedOutcome} onChange={(e) => onUpdateImprovement(index, j, "expectedOutcome", e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 mt-1 text-gray-700 bg-white/80 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 mt-1 text-gray-700 bg-white/80 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-400" />
                 </div>
               </div>
             </div>

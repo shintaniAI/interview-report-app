@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useState } from "react";
 import type { Report, FormData, Improvement } from "@/types";
 import { SCORE_LABELS, SCORE_ICONS, GRADE_COLORS, GRADE_BG, GRADE_LABELS, SEVERITY_LABELS } from "@/constants";
 import RadarChart from "./RadarChart";
@@ -27,14 +27,14 @@ export default function ReportView({
   onUpdateImprovement,
 }: ReportViewProps) {
   const reportRef = useRef<HTMLDivElement>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveResult, setSaveResult] = useState<string | null>(null);
 
   const handlePdfExport = useCallback(async () => {
     const element = reportRef.current;
     if (!element) return;
 
-    // Force all toggles open for PDF
     element.setAttribute("data-pdf-export", "true");
-    // Hide no-print elements
     const noPrintEls = element.querySelectorAll(".no-print");
     noPrintEls.forEach((el) => (el as HTMLElement).style.display = "none");
 
@@ -49,20 +49,37 @@ export default function ReportView({
 
     await html2pdf().set(opt).from(element).save();
 
-    // Restore
     element.removeAttribute("data-pdf-export");
     noPrintEls.forEach((el) => (el as HTMLElement).style.display = "");
   }, [form.candidateName, form.interviewDate]);
 
-  // Check if we're in PDF export mode (always show toggles open)
-  // We use a simpler approach: always pass forceOpen to children during PDF
-  // Since html2pdf captures synchronously after render, we use CSS-based approach instead
-  // and always render content open
+  const handleSave = useCallback(async () => {
+    setSaving(true);
+    setSaveResult(null);
+    try {
+      const res = await fetch("/api/reports/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ report: r, form }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSaveResult("保存しました ✓");
+      } else {
+        setSaveResult(data.error || "保存に失敗しました");
+      }
+    } catch {
+      setSaveResult("保存に失敗しました（通信エラー）");
+    } finally {
+      setSaving(false);
+      setTimeout(() => setSaveResult(null), 3000);
+    }
+  }, [r, form]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
       <div className="max-w-4xl mx-auto py-10 px-4">
-        <div className="no-print flex gap-3 mb-6">
+        <div className="no-print flex gap-3 mb-6 flex-wrap">
           <button onClick={onBack}
             className="px-5 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm cursor-pointer">
             ← 入力に戻る
@@ -71,13 +88,22 @@ export default function ReportView({
             className="px-6 py-2.5 bg-gradient-to-r from-rose-500 to-rose-600 text-white rounded-xl font-medium hover:from-rose-600 hover:to-rose-700 transition-all shadow-lg shadow-rose-500/25 cursor-pointer">
             📄 PDF保存
           </button>
+          <button onClick={handleSave} disabled={saving}
+            className="px-6 py-2.5 bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-xl font-medium hover:from-teal-600 hover:to-teal-700 transition-all shadow-lg shadow-teal-500/25 cursor-pointer disabled:opacity-50">
+            {saving ? "保存中..." : "💾 レポートを保存"}
+          </button>
+          {saveResult && (
+            <span className={`self-center text-sm font-medium ${saveResult.includes("✓") ? "text-teal-600" : "text-red-500"}`}>
+              {saveResult}
+            </span>
+          )}
         </div>
 
         <div ref={reportRef} className="bg-white rounded-2xl shadow-lg shadow-gray-200/50 border border-white/60 p-8 space-y-8">
           {/* Header */}
           <div className="border-b border-gray-100 pb-5">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white text-lg">📋</div>
+              <img src="/logo-202.svg" alt="202" className="h-8" />
               <h1 className="text-2xl font-bold text-gray-800">入社後面談レポート</h1>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
@@ -105,7 +131,7 @@ export default function ReportView({
             <div className="flex-1">
               <p className="text-xl font-bold text-gray-800">総合評価: {GRADE_LABELS[r.overallGrade] || r.overallGrade}</p>
               <textarea value={r.overallGradeReason} onChange={(e) => onUpdateReportField("overallGradeReason", e.target.value)}
-                className="text-sm text-gray-600 w-full bg-transparent border-0 border-b border-transparent hover:border-gray-300 focus:border-blue-500 focus:ring-0 resize-none p-0 mt-2" rows={2} />
+                className="text-sm text-gray-600 w-full bg-transparent border-0 border-b border-transparent hover:border-gray-300 focus:border-orange-500 focus:ring-0 resize-none p-0 mt-2" rows={2} />
             </div>
           </div>
 
@@ -113,10 +139,10 @@ export default function ReportView({
           {r.radarScores && (
             <div>
               <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-                <span className="w-7 h-7 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600 text-xs">⬡</span>
+                <span className="w-7 h-7 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 text-xs">⬡</span>
                 総合マッチ度
               </h2>
-              <div className="bg-gradient-to-br from-gray-50 to-slate-50 rounded-xl p-6 border border-gray-100">
+              <div className="bg-gradient-to-br from-gray-50 to-orange-50/30 rounded-xl p-6 border border-gray-100">
                 <RadarChart scores={r.radarScores} />
               </div>
             </div>
@@ -125,11 +151,11 @@ export default function ReportView({
           {/* Scores */}
           <div>
             <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-              <span className="w-7 h-7 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600 text-xs">📊</span>
+              <span className="w-7 h-7 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 text-xs">📊</span>
               スコア一覧
               <span className="text-xs text-gray-400 font-normal ml-2">クリックで評価の根拠を表示</span>
             </h2>
-            <div className="bg-gradient-to-br from-gray-50 to-slate-50 rounded-xl p-4 border border-gray-100">
+            <div className="bg-gradient-to-br from-gray-50 to-orange-50/30 rounded-xl p-4 border border-gray-100">
               {Object.entries(r.scores).map(([key, val]) => (
                 <ScoreBarToggle key={key} label={SCORE_LABELS[key] || key} score={val.score} comment={val.comment}
                   icon={SCORE_ICONS[key] || "●"} evidence={val.evidence || []} />
@@ -140,11 +166,11 @@ export default function ReportView({
           {/* Summary */}
           <div>
             <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-              <span className="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-xs">📝</span>
+              <span className="w-7 h-7 bg-teal-100 rounded-lg flex items-center justify-center text-teal-600 text-xs">📝</span>
               面談サマリー
             </h2>
             <textarea value={r.summary} onChange={(e) => onUpdateReportField("summary", e.target.value)}
-              className="w-full border border-gray-200 rounded-xl p-4 text-gray-700 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-blue-500/20 resize-y transition-all" rows={4} />
+              className="w-full border border-gray-200 rounded-xl p-4 text-gray-700 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-orange-500/20 resize-y transition-all" rows={4} />
           </div>
 
           {/* Detail Sections */}
@@ -162,7 +188,7 @@ export default function ReportView({
               </h2>
               <textarea value={(r as unknown as Record<string, unknown>)[key] as string}
                 onChange={(e) => onUpdateReportField(key, e.target.value)}
-                className="w-full border border-gray-200 rounded-xl p-4 text-gray-700 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-blue-500/20 resize-y transition-all" rows={3} />
+                className="w-full border border-gray-200 rounded-xl p-4 text-gray-700 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-orange-500/20 resize-y transition-all" rows={3} />
             </div>
           ))}
 
@@ -201,7 +227,7 @@ export default function ReportView({
           {/* Footer */}
           <div className="border-t border-gray-100 pt-5 flex justify-between items-end">
             <div className="text-xs text-gray-400">
-              <p>※ このレポートはAIにより自動生成されたものです。</p>
+              <p>※ このレポートは自動生成されたものです。</p>
               <p>内容は担当者が確認・修正の上ご利用ください。</p>
             </div>
             <div className="text-xs text-gray-400 text-right">
