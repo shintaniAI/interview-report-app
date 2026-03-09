@@ -28,10 +28,35 @@ export default function ReportView({
 }: ReportViewProps) {
   const reportRef = useRef<HTMLDivElement>(null);
   const [isEditing, setIsEditing] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saveResult, setSaveResult] = useState<string | null>(null);
 
   const handlePdfExport = useCallback(() => {
     window.print();
   }, []);
+
+  const handleSaveToDrive = useCallback(async () => {
+    setSaving(true);
+    setSaveResult(null);
+    try {
+      const res = await fetch("/api/save-to-drive", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ report: r, form }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSaveResult("Driveに保存されました");
+      } else {
+        setSaveResult(data.error || "保存に失敗しました");
+      }
+    } catch {
+      setSaveResult("保存に失敗しました（通信エラー）");
+    } finally {
+      setSaving(false);
+      setTimeout(() => setSaveResult(null), 5000);
+    }
+  }, [r, form]);
 
   const renderTextField = (value: string, field: string, rows = 3) => {
     if (isEditing) {
@@ -68,6 +93,15 @@ export default function ReportView({
             className="px-6 py-2.5 bg-gradient-to-r from-rose-500 to-rose-600 text-white rounded-xl font-medium hover:from-rose-600 hover:to-rose-700 transition-all shadow-lg shadow-rose-500/25 cursor-pointer">
             PDF保存
           </button>
+          <button onClick={handleSaveToDrive} disabled={saving}
+            className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-medium hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg shadow-blue-500/25 cursor-pointer disabled:opacity-50">
+            {saving ? "保存中..." : "Driveに保存"}
+          </button>
+          {saveResult && (
+            <span className={`self-center text-sm font-medium ${saveResult.includes("保存されました") ? "text-blue-600" : "text-red-500"}`}>
+              {saveResult}
+            </span>
+          )}
         </div>
 
         <div ref={reportRef} className="bg-white rounded-2xl shadow-lg shadow-gray-200/50 border border-white/60 p-8 space-y-8 print:shadow-none print:border-0 print:rounded-none print:p-4">
