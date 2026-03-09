@@ -202,39 +202,49 @@ export async function POST(req: NextRequest) {
 
     const accessToken = await getAccessToken();
     const html = generateHtml(form, report);
-    const fileName = `面談レポート_${form.candidateName}_${form.interviewDate || "日付未設定"}.html`;
-
-    // Get target folder ID from env, or use root
+    const pdfFileName = `面談レポート_${form.candidateName}_${form.interviewDate || "日付未設定"}.pdf`;
     const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID || "";
 
-    // Multipart upload to Google Drive
+    // Step 1: Upload HTML as Google Doc (converts HTML to Docs format, preserving Japanese)
     const boundary = "----FormBoundary" + Date.now();
-    const metadata: Record<string, string | string[]> = {
-      name: fileName,
-      mimeType: "text/html",
+    const metadataObj: Record<string, string | string[]> = {
+      name: "temp_report_" + Date.now(),
+      mimeType: "application/vnd.google-apps.document",
     };
     if (folderId) {
-      metadata.parents = [folderId];
+      metadataObj.parents = [folderId];
     }
 
-    const multipartBody =
-      `--${boundary}\r\n` +
-      `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
-      JSON.stringify(metadata) + `\r\n` +
-      `--${boundary}\r\n` +
-      `Content-Type: text/html; charset=UTF-8\r\n\r\n` +
-      html + `\r\n` +
-      `--${boundary}--`;
+    const metadataJson = JSON.stringify(metadataObj);
+    const encoder = new TextEncoder();
+    const htmlBytes = encoder.encode(html);
+    const metadataBytes = encoder.encode(metadataJson);
+
+    // Build multipart body as binary
+    const parts: Uint8Array[] = [];
+    parts.push(encoder.encode(`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n`));
+    parts.push(metadataBytes);
+    parts.push(encoder.encode(`\r\n--${boundary}\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n`));
+    parts.push(htmlBytes);
+    parts.push(encoder.encode(`\r\n--${boundary}--`));
+
+    const totalLength = parts.reduce((sum, p) => sum + p.length, 0);
+    const uploadBody = new Uint8Array(totalLength);
+    let uploadOffset = 0;
+    for (const part of parts) {
+      uploadBody.set(part, uploadOffset);
+      uploadOffset += part.length;
+    }
 
     const uploadRes = await fetch(
-      "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink",
+      "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id",
       {
         method: "POST",
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": `multipart/related; boundary=${boundary}`,
         },
-        body: multipartBody,
+        body: uploadBody,
       }
     );
 
@@ -244,7 +254,81 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: `Drive保存に失敗しました (${uploadRes.status})` }, { status: 502 });
     }
 
-    const fileData = await uploadRes.json();
+    const tempDoc = await uploadRes.json();
+    const tempDocId = tempDoc.id;
+
+    // Step 2: Export Google Doc as PDF
+    const pdfRes = await fetch(
+      `https://www.googleapis.com/drive/v3/files/${tempDocId}/export?mimeType=application/pdf`,
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }
+    );
+
+    if (!pdfRes.ok) {
+      // Cleanup temp doc
+      await fetch(`https://www.googleapis.com/drive/v3/files/${tempDocId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      return NextResponse.json({ success: false, error: `PDF変換に失敗しました (${pdfRes.status})` }, { status: 502 });
+    }
+
+    const pdfBuffer = await pdfRes.arrayBuffer();
+
+    // Step 3: Upload PDF to Drive
+    const pdfMetadata: Record<string, string | string[]> = {
+      name: pdfFileName,
+      mimeType: "application/pdf",
+    };
+    if (folderId) {
+      pdfMetadata.parents = [folderId];
+    }
+
+    const pdfBoundary = "----PdfBoundary" + Date.now();
+    const pdfMetaBytes = encoder.encode(JSON.stringify(pdfMetadata));
+    const pdfDataBytes = new Uint8Array(pdfBuffer);
+
+    const pdfParts: Uint8Array[] = [];
+    pdfParts.push(encoder.encode(`--${pdfBoundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n`));
+    pdfParts.push(pdfMetaBytes);
+    pdfParts.push(encoder.encode(`\r\n--${pdfBoundary}\r\nContent-Type: application/pdf\r\n\r\n`));
+    pdfParts.push(pdfDataBytes);
+    pdfParts.push(encoder.encode(`\r\n--${pdfBoundary}--`));
+
+    const pdfTotal = pdfParts.reduce((sum, p) => sum + p.length, 0);
+    const pdfBody = new Uint8Array(pdfTotal);
+    let pdfOffset = 0;
+    for (const part of pdfParts) {
+      pdfBody.set(part, pdfOffset);
+      pdfOffset += part.length;
+    }
+
+    const pdfUploadRes = await fetch(
+      "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": `multipart/related; boundary=${pdfBoundary}`,
+        },
+        body: pdfBody,
+      }
+    );
+
+    // Step 4: Delete temp Google Doc
+    await fetch(`https://www.googleapis.com/drive/v3/files/${tempDocId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${accessToken}` },
+    }).catch(() => {}); // best effort cleanup
+
+    if (!pdfUploadRes.ok) {
+      const errText = await pdfUploadRes.text();
+      console.error("PDF upload error:", errText);
+      return NextResponse.json({ success: false, error: `PDF保存に失敗しました (${pdfUploadRes.status})` }, { status: 502 });
+    }
+
+    const fileData = await pdfUploadRes.json();
 
     return NextResponse.json({
       success: true,
