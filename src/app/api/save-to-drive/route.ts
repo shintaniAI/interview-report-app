@@ -71,7 +71,9 @@ async function getAccessToken(): Promise<string> {
   });
 
   if (!res.ok) {
-    throw new Error(`Token refresh failed: ${res.status}`);
+    const errBody = await res.text();
+    console.error("Token refresh error:", res.status, errBody);
+    throw new Error(`Token refresh failed: ${res.status} - ${errBody}`);
   }
 
   const data = await res.json();
