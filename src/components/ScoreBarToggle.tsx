@@ -37,7 +37,7 @@ export default function ScoreBarToggle({ label, score, comment, icon, evidence, 
             <div
               key={i}
               className={`w-7 h-7 rounded-md transition-all duration-300 ${
-                i <= score ? `${barColors[score - 1]} shadow-sm` : "bg-gray-100 border border-gray-200"
+                score > 0 && i <= score ? `${barColors[Math.min(score, 5) - 1]} shadow-sm` : "bg-gray-100 border border-gray-200"
               }`}
             />
           ))}

@@ -35,7 +35,7 @@ export default function IssueCard({ issue, index, severity, onUpdateIssue, onUpd
         <span className={`text-gray-400 transition-transform duration-200 shrink-0 mt-1 no-print ${isOpen ? "rotate-180" : ""}`}>▼</span>
       </button>
 
-      {isOpen && issue.improvements && (
+      {isOpen && Array.isArray(issue.improvements) && issue.improvements.length > 0 && (
         <div className="border-t border-gray-100 bg-gradient-to-br from-orange-50/50 to-amber-50/50 p-5 space-y-4">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">改善施策</p>
           {issue.improvements.map((imp, j) => (

@@ -6,6 +6,13 @@ const genAI = new GoogleGenerativeAI(GEMINI_KEY);
 
 export async function POST(req: NextRequest) {
   try {
+    if (!GEMINI_KEY) {
+      return NextResponse.json(
+        { success: false, error: "GEMINI_API_KEY 環境変数が設定されていません。Vercelの環境変数設定を確認してください。" },
+        { status: 500 }
+      );
+    }
+
     const body = await req.json();
     const {
       candidateName,
@@ -148,7 +155,16 @@ ${memo || "なし"}
       jsonStr = jsonMatch[1].trim();
     }
 
-    const report = JSON.parse(jsonStr);
+    let report;
+    try {
+      report = JSON.parse(jsonStr);
+    } catch (parseErr) {
+      console.error("JSON parse failed. Raw response:", text.substring(0, 500));
+      return NextResponse.json(
+        { success: false, error: "AIの応答をJSONとして解析できませんでした。もう一度お試しください。" },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({ success: true, report });
   } catch (error) {

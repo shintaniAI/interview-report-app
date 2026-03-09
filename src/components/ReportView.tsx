@@ -35,6 +35,8 @@ export default function ReportView({
     const element = reportRef.current;
     if (!element) return;
 
+    const originalStyles: { el: HTMLElement; bg: string; color: string; border: string }[] = [];
+
     try {
       element.setAttribute("data-pdf-export", "true");
       const noPrintEls = element.querySelectorAll(".no-print");
@@ -57,7 +59,6 @@ export default function ReportView({
 
       // Compute and inline all colors to avoid lab()/oklch() parsing issues
       const allElements = element.querySelectorAll("*");
-      const originalStyles: { el: HTMLElement; bg: string; color: string; border: string }[] = [];
       allElements.forEach((el) => {
         const htmlEl = el as HTMLElement;
         const computed = getComputedStyle(htmlEl);
@@ -98,6 +99,12 @@ export default function ReportView({
     } catch (err) {
       console.error("PDF export failed:", err);
       alert("PDF保存に失敗しました: " + (err instanceof Error ? err.message : String(err)));
+      // Restore inlined styles
+      originalStyles.forEach(({ el, bg, color, border }) => {
+        el.style.backgroundColor = bg;
+        el.style.color = color;
+        el.style.borderColor = border;
+      });
       element.removeAttribute("data-pdf-export");
       const restoreEls = element.querySelectorAll(".no-print");
       restoreEls.forEach((el) => (el as HTMLElement).style.display = "");
@@ -228,6 +235,7 @@ export default function ReportView({
           )}
 
           {/* Scores */}
+          {r.scores && (
           <div>
             <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
               <span className="w-7 h-7 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 text-xs font-bold">2</span>
@@ -235,12 +243,16 @@ export default function ReportView({
               <span className="text-xs text-gray-400 font-normal ml-2">クリックで評価の根拠を表示</span>
             </h2>
             <div className="bg-gradient-to-br from-gray-50 to-orange-50/30 rounded-xl p-4 border border-gray-100">
-              {Object.entries(r.scores).map(([key, val]) => (
-                <ScoreBarToggle key={key} label={SCORE_LABELS[key] || key} score={val.score} comment={val.comment}
-                  icon={SCORE_ICONS[key] || ""} evidence={val.evidence || []} />
-              ))}
+              {Object.entries(r.scores).map(([key, val]) => {
+                const detail = val || { score: 0, comment: "", evidence: [] };
+                return (
+                  <ScoreBarToggle key={key} label={SCORE_LABELS[key] || key} score={detail.score ?? 0} comment={detail.comment ?? ""}
+                    icon={SCORE_ICONS[key] || ""} evidence={Array.isArray(detail.evidence) ? detail.evidence : []} />
+                );
+              })}
             </div>
           </div>
+          )}
 
           {/* Summary */}
           <div>
@@ -264,7 +276,7 @@ export default function ReportView({
                 <span className="w-7 h-7 bg-gray-100 rounded-lg flex items-center justify-center text-xs font-bold text-gray-600">{icon}</span>
                 {title}
               </h2>
-              {renderTextField((r as unknown as Record<string, unknown>)[key] as string, key)}
+              {renderTextField(((r as unknown as Record<string, unknown>)[key] as string) ?? "", key)}
             </div>
           ))}
 
@@ -275,7 +287,7 @@ export default function ReportView({
               良かった点・強み
             </h2>
             <ul className="space-y-2.5">
-              {r.positives.map((item, i) => (
+              {(Array.isArray(r.positives) ? r.positives : []).map((item, i) => (
                 <li key={i} className="flex items-center gap-3 bg-emerald-50/50 border border-emerald-100 rounded-xl px-4 py-2.5">
                   <span className="w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs shrink-0">✓</span>
                   {isEditing ? (
@@ -296,7 +308,7 @@ export default function ReportView({
               課題と改善策
             </h2>
             <div className="space-y-5">
-              {r.issues && r.issues.map((issue, i) => {
+              {(Array.isArray(r.issues) ? r.issues : []).map((issue, i) => {
                 const sev = SEVERITY_LABELS[issue.severity] || SEVERITY_LABELS.medium;
                 return <IssueCard key={i} issue={issue} index={i} severity={sev}
                   onUpdateIssue={onUpdateIssueField} onUpdateImprovement={onUpdateImprovement} isEditing={isEditing} />;
