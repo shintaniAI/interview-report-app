@@ -7,10 +7,29 @@
 }
 
 @media print {
-  .no-print {
+  .no-print,
+  .print\:hidden {
     display: none !important;
   }
+
   body {
-    font-size: 12px;
+    font-size: 11px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Clean up for PDF output */
+  textarea, input[type="text"] {
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    resize: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+
+  /* Ensure page breaks work well */
+  .space-y-8 > div {
+    break-inside: avoid;
   }
 }
