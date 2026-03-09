@@ -29,7 +29,7 @@ export default function ReportView({
   const reportRef = useRef<HTMLDivElement>(null);
   const [saving, setSaving] = useState(false);
   const [saveResult, setSaveResult] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(true);
 
   const handlePdfExport = useCallback(async () => {
     const element = reportRef.current;
@@ -40,6 +40,38 @@ export default function ReportView({
       const noPrintEls = element.querySelectorAll(".no-print");
       noPrintEls.forEach((el) => (el as HTMLElement).style.display = "none");
 
+      // Fix for html2canvas not supporting lab()/oklch() color functions from Tailwind v4
+      // Inject a style override to force RGB colors
+      const fixStyle = document.createElement("style");
+      fixStyle.id = "pdf-color-fix";
+      fixStyle.textContent = `
+        * { 
+          color: inherit !important;
+          border-color: inherit !important;
+        }
+        :root {
+          color-scheme: light;
+        }
+      `;
+      document.head.appendChild(fixStyle);
+
+      // Compute and inline all colors to avoid lab()/oklch() parsing issues
+      const allElements = element.querySelectorAll("*");
+      const originalStyles: { el: HTMLElement; bg: string; color: string; border: string }[] = [];
+      allElements.forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        const computed = getComputedStyle(htmlEl);
+        originalStyles.push({
+          el: htmlEl,
+          bg: htmlEl.style.backgroundColor,
+          color: htmlEl.style.color,
+          border: htmlEl.style.borderColor,
+        });
+        htmlEl.style.backgroundColor = computed.backgroundColor;
+        htmlEl.style.color = computed.color;
+        htmlEl.style.borderColor = computed.borderColor;
+      });
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const html2pdfModule = await import("html2pdf.js") as any;
       const html2pdf = html2pdfModule.default || html2pdfModule;
@@ -47,11 +79,19 @@ export default function ReportView({
         margin: [10, 10, 10, 10] as [number, number, number, number],
         filename: `面談レポート_${form.candidateName}_${form.interviewDate || "日付未設定"}.pdf`,
         image: { type: "jpeg" as const, quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
         jsPDF: { unit: "mm" as const, format: "a4" as const, orientation: "portrait" as const },
       };
 
       await html2pdf().set(opt).from(element).save();
+
+      // Restore original styles
+      originalStyles.forEach(({ el, bg, color, border }) => {
+        el.style.backgroundColor = bg;
+        el.style.color = color;
+        el.style.borderColor = border;
+      });
+      fixStyle.remove();
 
       element.removeAttribute("data-pdf-export");
       noPrintEls.forEach((el) => (el as HTMLElement).style.display = "");
@@ -59,8 +99,9 @@ export default function ReportView({
       console.error("PDF export failed:", err);
       alert("PDF保存に失敗しました: " + (err instanceof Error ? err.message : String(err)));
       element.removeAttribute("data-pdf-export");
-      const noPrintEls = element.querySelectorAll(".no-print");
-      noPrintEls.forEach((el) => (el as HTMLElement).style.display = "");
+      const restoreEls = element.querySelectorAll(".no-print");
+      restoreEls.forEach((el) => (el as HTMLElement).style.display = "");
+      document.getElementById("pdf-color-fix")?.remove();
     }
   }, [form.candidateName, form.interviewDate]);
 
@@ -264,11 +305,7 @@ export default function ReportView({
           </div>
 
           {/* Footer */}
-          <div className="border-t border-gray-100 pt-5 flex justify-between items-end">
-            <div className="text-xs text-gray-400">
-              <p>※ このレポートは自動生成されたものです。</p>
-              <p>内容は担当者が確認・修正の上ご利用ください。</p>
-            </div>
+          <div className="border-t border-gray-100 pt-5 flex justify-end">
             <div className="text-xs text-gray-400 text-right">
               <p>作成日時: {new Date().toLocaleString("ja-JP")}</p>
               <p>作成者: {form.interviewer || "-"}</p>
