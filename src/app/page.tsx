@@ -90,6 +90,25 @@ export default function Home() {
     setEditableReport((prev) => (prev ? { ...prev, positives: newPositives } : prev));
   };
 
+  const updateScore = (scoreKey: string, newScore: number) => {
+    if (!editableReport) return;
+    setEditableReport((prev) => {
+      if (!prev) return prev;
+      const newScores = { ...prev.scores };
+      const existing = newScores[scoreKey as keyof typeof newScores];
+      if (existing) {
+        newScores[scoreKey as keyof typeof newScores] = { ...existing, score: newScore };
+      }
+      const newRadar = prev.radarScores ? { ...prev.radarScores, [scoreKey]: newScore } : prev.radarScores;
+      return { ...prev, scores: newScores, radarScores: newRadar };
+    });
+  };
+
+  const updateGrade = (grade: string) => {
+    if (!editableReport) return;
+    setEditableReport((prev) => (prev ? { ...prev, overallGrade: grade } : prev));
+  };
+
   const updateIssueField = (issueIdx: number, field: string, value: string) => {
     if (!editableReport) return;
     const newIssues = [...editableReport.issues];
@@ -136,6 +155,8 @@ export default function Home() {
         onUpdatePositive={updatePositive}
         onUpdateIssueField={updateIssueField}
         onUpdateImprovement={updateImprovement}
+        onUpdateScore={updateScore}
+        onUpdateGrade={updateGrade}
       />
     );
   }

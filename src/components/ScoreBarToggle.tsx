@@ -10,9 +10,12 @@ interface ScoreBarToggleProps {
   icon: string;
   evidence: Evidence[];
   forceOpen?: boolean;
+  scoreKey?: string;
+  isEditing?: boolean;
+  onUpdateScore?: (scoreKey: string, newScore: number) => void;
 }
 
-export default function ScoreBarToggle({ label, score, comment, icon, evidence, forceOpen = false }: ScoreBarToggleProps) {
+export default function ScoreBarToggle({ label, score, comment, icon, evidence, forceOpen = false, scoreKey, isEditing = false, onUpdateScore }: ScoreBarToggleProps) {
   const [open, setOpen] = useState(false);
   const isOpen = forceOpen || open;
 
@@ -24,21 +27,29 @@ export default function ScoreBarToggle({ label, score, comment, icon, evidence, 
     "bg-emerald-400",
   ];
 
+  const handleScoreClick = (newScore: number, e: React.MouseEvent) => {
+    if (isEditing && scoreKey && onUpdateScore) {
+      e.stopPropagation();
+      onUpdateScore(scoreKey, newScore);
+    }
+  };
+
   return (
     <div className="border border-gray-100 rounded-xl overflow-hidden mb-2 transition-all">
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center gap-3 py-3 px-4 hover:bg-white/80 transition-colors cursor-pointer no-print-toggle"
       >
-        <span className="text-lg shrink-0">{icon}</span>
+        {icon && <span className="text-lg shrink-0">{icon}</span>}
         <span className="w-36 text-sm font-medium text-gray-700 shrink-0 text-left">{label}</span>
         <div className="flex gap-1.5 shrink-0">
           {[1, 2, 3, 4, 5].map((i) => (
             <div
               key={i}
+              onClick={(e) => handleScoreClick(i, e)}
               className={`w-7 h-7 rounded-md transition-all duration-300 ${
                 score > 0 && i <= score ? `${barColors[Math.min(score, 5) - 1]} shadow-sm` : "bg-gray-100 border border-gray-200"
-              }`}
+              } ${isEditing ? "cursor-pointer hover:scale-110" : ""}`}
             />
           ))}
         </div>

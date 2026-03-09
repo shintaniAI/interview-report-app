@@ -15,6 +15,8 @@ interface ReportViewProps {
   onUpdatePositive: (index: number, value: string) => void;
   onUpdateIssueField: (issueIdx: number, field: string, value: string) => void;
   onUpdateImprovement: (issueIdx: number, impIdx: number, field: keyof Improvement, value: string) => void;
+  onUpdateScore: (scoreKey: string, newScore: number) => void;
+  onUpdateGrade: (grade: string) => void;
 }
 
 export default function ReportView({
@@ -25,6 +27,8 @@ export default function ReportView({
   onUpdatePositive,
   onUpdateIssueField,
   onUpdateImprovement,
+  onUpdateScore,
+  onUpdateGrade,
 }: ReportViewProps) {
   const reportRef = useRef<HTMLDivElement>(null);
   const [isEditing, setIsEditing] = useState(true);
@@ -130,9 +134,24 @@ export default function ReportView({
 
           {/* Overall Grade */}
           <div className={`flex items-center gap-5 p-5 rounded-xl border ${GRADE_BG[r.overallGrade] || "bg-gray-50 border-gray-200"}`}>
-            <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${GRADE_COLORS[r.overallGrade] || "from-gray-400 to-gray-600"} flex items-center justify-center text-white text-4xl font-bold shadow-lg print:shadow-none`}>
-              {r.overallGrade}
-            </div>
+            {isEditing ? (
+              <div className="flex flex-col gap-1 shrink-0">
+                {["A", "B", "C"].map((g) => (
+                  <button key={g} onClick={() => onUpdateGrade(g)}
+                    className={`w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-bold cursor-pointer transition-all ${
+                      r.overallGrade === g
+                        ? `bg-gradient-to-br ${GRADE_COLORS[g]} text-white shadow-lg`
+                        : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                    }`}>
+                    {g}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${GRADE_COLORS[r.overallGrade] || "from-gray-400 to-gray-600"} flex items-center justify-center text-white text-4xl font-bold shadow-lg print:shadow-none`}>
+                {r.overallGrade}
+              </div>
+            )}
             <div className="flex-1">
               <p className="text-xl font-bold text-gray-800">総合評価: {GRADE_LABELS[r.overallGrade] || r.overallGrade}</p>
               {isEditing ? (
@@ -170,7 +189,8 @@ export default function ReportView({
                 const detail = val || { score: 0, comment: "", evidence: [] };
                 return (
                   <ScoreBarToggle key={key} label={SCORE_LABELS[key] || key} score={detail.score ?? 0} comment={detail.comment ?? ""}
-                    icon={SCORE_ICONS[key] || ""} evidence={Array.isArray(detail.evidence) ? detail.evidence : []} />
+                    icon={SCORE_ICONS[key] || ""} evidence={Array.isArray(detail.evidence) ? detail.evidence : []}
+                    scoreKey={key} isEditing={isEditing} onUpdateScore={onUpdateScore} />
                 );
               })}
             </div>
