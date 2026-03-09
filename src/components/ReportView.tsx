@@ -29,6 +29,7 @@ export default function ReportView({
   const reportRef = useRef<HTMLDivElement>(null);
   const [saving, setSaving] = useState(false);
   const [saveResult, setSaveResult] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   const handlePdfExport = useCallback(async () => {
     const element = reportRef.current;
@@ -74,7 +75,7 @@ export default function ReportView({
       });
       const data = await res.json();
       if (data.success) {
-        setSaveResult("保存しました ✓");
+        setSaveResult("保存しました");
       } else {
         setSaveResult(data.error || "保存に失敗しました");
       }
@@ -86,6 +87,21 @@ export default function ReportView({
     }
   }, [r, form]);
 
+  // Render a text field: editable textarea or readonly display
+  const renderTextField = (value: string, field: string, rows = 3) => {
+    if (isEditing) {
+      return (
+        <textarea value={value} onChange={(e) => onUpdateReportField(field, e.target.value)}
+          className="w-full border border-orange-200 rounded-xl p-4 text-gray-700 bg-orange-50/30 focus:bg-white focus:ring-2 focus:ring-orange-500/20 resize-y transition-all" rows={rows} />
+      );
+    }
+    return (
+      <div className="w-full rounded-xl p-4 text-gray-700 bg-gray-50/30 border border-gray-100 whitespace-pre-wrap leading-relaxed">
+        {value || "-"}
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
       <div className="max-w-4xl mx-auto py-10 px-4">
@@ -93,6 +109,14 @@ export default function ReportView({
           <button onClick={onBack}
             className="px-5 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm cursor-pointer">
             ← 入力に戻る
+          </button>
+          <button onClick={() => setIsEditing(!isEditing)}
+            className={`px-6 py-2.5 rounded-xl font-medium transition-all shadow-sm cursor-pointer ${
+              isEditing
+                ? "bg-orange-500 text-white hover:bg-orange-600 shadow-orange-500/25"
+                : "bg-white border border-orange-300 text-orange-600 hover:bg-orange-50"
+            }`}>
+            {isEditing ? "編集を終了" : "編集する"}
           </button>
           <button onClick={handlePdfExport}
             className="px-6 py-2.5 bg-gradient-to-r from-rose-500 to-rose-600 text-white rounded-xl font-medium hover:from-rose-600 hover:to-rose-700 transition-all shadow-lg shadow-rose-500/25 cursor-pointer">
@@ -103,7 +127,7 @@ export default function ReportView({
             {saving ? "保存中..." : "レポートを保存"}
           </button>
           {saveResult && (
-            <span className={`self-center text-sm font-medium ${saveResult.includes("✓") ? "text-teal-600" : "text-red-500"}`}>
+            <span className={`self-center text-sm font-medium ${saveResult.includes("保存しました") ? "text-teal-600" : "text-red-500"}`}>
               {saveResult}
             </span>
           )}
@@ -140,8 +164,12 @@ export default function ReportView({
             </div>
             <div className="flex-1">
               <p className="text-xl font-bold text-gray-800">総合評価: {GRADE_LABELS[r.overallGrade] || r.overallGrade}</p>
-              <textarea value={r.overallGradeReason} onChange={(e) => onUpdateReportField("overallGradeReason", e.target.value)}
-                className="text-sm text-gray-600 w-full bg-transparent border-0 border-b border-transparent hover:border-gray-300 focus:border-orange-500 focus:ring-0 resize-none p-0 mt-2" rows={2} />
+              {isEditing ? (
+                <textarea value={r.overallGradeReason} onChange={(e) => onUpdateReportField("overallGradeReason", e.target.value)}
+                  className="text-sm text-gray-600 w-full bg-orange-50/30 border border-orange-200 rounded-lg p-2 focus:ring-2 focus:ring-orange-500/20 resize-none mt-2" rows={2} />
+              ) : (
+                <p className="text-sm text-gray-600 mt-2">{r.overallGradeReason}</p>
+              )}
             </div>
           </div>
 
@@ -168,7 +196,7 @@ export default function ReportView({
             <div className="bg-gradient-to-br from-gray-50 to-orange-50/30 rounded-xl p-4 border border-gray-100">
               {Object.entries(r.scores).map(([key, val]) => (
                 <ScoreBarToggle key={key} label={SCORE_LABELS[key] || key} score={val.score} comment={val.comment}
-                  icon={SCORE_ICONS[key] || "●"} evidence={val.evidence || []} />
+                  icon={SCORE_ICONS[key] || ""} evidence={val.evidence || []} />
               ))}
             </div>
           </div>
@@ -179,8 +207,7 @@ export default function ReportView({
               <span className="w-7 h-7 bg-teal-100 rounded-lg flex items-center justify-center text-teal-600 text-xs font-bold">3</span>
               面談サマリー
             </h2>
-            <textarea value={r.summary} onChange={(e) => onUpdateReportField("summary", e.target.value)}
-              className="w-full border border-gray-200 rounded-xl p-4 text-gray-700 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-orange-500/20 resize-y transition-all" rows={4} />
+            {renderTextField(r.summary, "summary", 4)}
           </div>
 
           {/* Detail Sections */}
@@ -196,9 +223,7 @@ export default function ReportView({
                 <span className="w-7 h-7 bg-gray-100 rounded-lg flex items-center justify-center text-xs font-bold text-gray-600">{icon}</span>
                 {title}
               </h2>
-              <textarea value={(r as unknown as Record<string, unknown>)[key] as string}
-                onChange={(e) => onUpdateReportField(key, e.target.value)}
-                className="w-full border border-gray-200 rounded-xl p-4 text-gray-700 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-orange-500/20 resize-y transition-all" rows={3} />
+              {renderTextField((r as unknown as Record<string, unknown>)[key] as string, key)}
             </div>
           ))}
 
@@ -212,8 +237,12 @@ export default function ReportView({
               {r.positives.map((item, i) => (
                 <li key={i} className="flex items-center gap-3 bg-emerald-50/50 border border-emerald-100 rounded-xl px-4 py-2.5">
                   <span className="w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs shrink-0">✓</span>
-                  <input type="text" value={item} onChange={(e) => onUpdatePositive(i, e.target.value)}
-                    className="flex-1 bg-transparent border-0 text-gray-700 focus:ring-0 p-0" />
+                  {isEditing ? (
+                    <input type="text" value={item} onChange={(e) => onUpdatePositive(i, e.target.value)}
+                      className="flex-1 bg-orange-50/30 border border-orange-200 rounded-lg px-2 py-1 text-gray-700 focus:ring-2 focus:ring-orange-500/20" />
+                  ) : (
+                    <span className="flex-1 text-gray-700">{item}</span>
+                  )}
                 </li>
               ))}
             </ul>
@@ -229,7 +258,7 @@ export default function ReportView({
               {r.issues && r.issues.map((issue, i) => {
                 const sev = SEVERITY_LABELS[issue.severity] || SEVERITY_LABELS.medium;
                 return <IssueCard key={i} issue={issue} index={i} severity={sev}
-                  onUpdateIssue={onUpdateIssueField} onUpdateImprovement={onUpdateImprovement} />;
+                  onUpdateIssue={onUpdateIssueField} onUpdateImprovement={onUpdateImprovement} isEditing={isEditing} />;
               })}
             </div>
           </div>

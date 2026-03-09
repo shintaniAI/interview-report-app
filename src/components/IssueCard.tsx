@@ -10,9 +10,10 @@ interface IssueCardProps {
   onUpdateIssue: (idx: number, field: string, value: string) => void;
   onUpdateImprovement: (issueIdx: number, impIdx: number, field: keyof Improvement, value: string) => void;
   forceOpen?: boolean;
+  isEditing?: boolean;
 }
 
-export default function IssueCard({ issue, index, severity, onUpdateIssue, onUpdateImprovement, forceOpen = false }: IssueCardProps) {
+export default function IssueCard({ issue, index, severity, onUpdateIssue, onUpdateImprovement, forceOpen = false, isEditing = false }: IssueCardProps) {
   const [open, setOpen] = useState(true);
   const isOpen = forceOpen || open;
 
@@ -44,33 +45,58 @@ export default function IssueCard({ issue, index, severity, onUpdateIssue, onUpd
                   施策 {j + 1}
                 </span>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="md:col-span-2">
-                  <label className="text-xs font-medium text-gray-400 uppercase tracking-wide">改善アクション</label>
-                  <input type="text" value={imp.action} onChange={(e) => onUpdateImprovement(index, j, "action", e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 mt-1 text-gray-700 bg-white/80 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-400" />
+              {isEditing ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="md:col-span-2">
+                    <label className="text-xs font-medium text-gray-400 uppercase tracking-wide">改善アクション</label>
+                    <input type="text" value={imp.action} onChange={(e) => onUpdateImprovement(index, j, "action", e.target.value)}
+                      className="w-full border border-orange-200 rounded-lg px-3 py-2 mt-1 text-gray-700 bg-orange-50/30 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-400" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-400 uppercase tracking-wide">担当者</label>
+                    <input type="text" value={imp.owner} onChange={(e) => onUpdateImprovement(index, j, "owner", e.target.value)}
+                      className="w-full border border-orange-200 rounded-lg px-3 py-2 mt-1 text-gray-700 bg-orange-50/30 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-400" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-400 uppercase tracking-wide">時期・頻度</label>
+                    <input type="text" value={imp.timeline} onChange={(e) => onUpdateImprovement(index, j, "timeline", e.target.value)}
+                      className="w-full border border-orange-200 rounded-lg px-3 py-2 mt-1 text-gray-700 bg-orange-50/30 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-400" />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="text-xs font-medium text-gray-400 uppercase tracking-wide">具体的な実施方法</label>
+                    <input type="text" value={imp.method} onChange={(e) => onUpdateImprovement(index, j, "method", e.target.value)}
+                      className="w-full border border-orange-200 rounded-lg px-3 py-2 mt-1 text-gray-700 bg-orange-50/30 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-400" />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="text-xs font-medium text-gray-400 uppercase tracking-wide">期待される効果</label>
+                    <input type="text" value={imp.expectedOutcome} onChange={(e) => onUpdateImprovement(index, j, "expectedOutcome", e.target.value)}
+                      className="w-full border border-orange-200 rounded-lg px-3 py-2 mt-1 text-gray-700 bg-orange-50/30 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-400" />
+                  </div>
                 </div>
-                <div>
-                  <label className="text-xs font-medium text-gray-400 uppercase tracking-wide">担当者</label>
-                  <input type="text" value={imp.owner} onChange={(e) => onUpdateImprovement(index, j, "owner", e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 mt-1 text-gray-700 bg-white/80 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-400" />
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                  <div className="md:col-span-2">
+                    <span className="text-xs font-medium text-gray-400">改善アクション</span>
+                    <p className="text-gray-700 mt-0.5">{imp.action}</p>
+                  </div>
+                  <div>
+                    <span className="text-xs font-medium text-gray-400">担当者</span>
+                    <p className="text-gray-700 mt-0.5">{imp.owner}</p>
+                  </div>
+                  <div>
+                    <span className="text-xs font-medium text-gray-400">時期・頻度</span>
+                    <p className="text-gray-700 mt-0.5">{imp.timeline}</p>
+                  </div>
+                  <div className="md:col-span-2">
+                    <span className="text-xs font-medium text-gray-400">具体的な実施方法</span>
+                    <p className="text-gray-700 mt-0.5">{imp.method}</p>
+                  </div>
+                  <div className="md:col-span-2">
+                    <span className="text-xs font-medium text-gray-400">期待される効果</span>
+                    <p className="text-gray-700 mt-0.5">{imp.expectedOutcome}</p>
+                  </div>
                 </div>
-                <div>
-                  <label className="text-xs font-medium text-gray-400 uppercase tracking-wide">時期・頻度</label>
-                  <input type="text" value={imp.timeline} onChange={(e) => onUpdateImprovement(index, j, "timeline", e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 mt-1 text-gray-700 bg-white/80 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-400" />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="text-xs font-medium text-gray-400 uppercase tracking-wide">具体的な実施方法</label>
-                  <input type="text" value={imp.method} onChange={(e) => onUpdateImprovement(index, j, "method", e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 mt-1 text-gray-700 bg-white/80 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-400" />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="text-xs font-medium text-gray-400 uppercase tracking-wide">期待される効果</label>
-                  <input type="text" value={imp.expectedOutcome} onChange={(e) => onUpdateImprovement(index, j, "expectedOutcome", e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 mt-1 text-gray-700 bg-white/80 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-400" />
-                </div>
-              </div>
+              )}
             </div>
           ))}
         </div>
