@@ -109,6 +109,44 @@ export default function Home() {
     setEditableReport((prev) => (prev ? { ...prev, overallGrade: grade } : prev));
   };
 
+  const addPositive = () => {
+    if (!editableReport) return;
+    setEditableReport((prev) => (prev ? { ...prev, positives: [...(prev.positives || []), ""] } : prev));
+  };
+
+  const removePositive = (index: number) => {
+    if (!editableReport) return;
+    const newPositives = editableReport.positives.filter((_, i) => i !== index);
+    setEditableReport((prev) => (prev ? { ...prev, positives: newPositives } : prev));
+  };
+
+  const addIssue = () => {
+    if (!editableReport) return;
+    const newIssue = { issue: "", quote: "", severity: "medium" as const, improvements: [] };
+    setEditableReport((prev) => (prev ? { ...prev, issues: [...(prev.issues || []), newIssue] } : prev));
+  };
+
+  const removeIssue = (index: number) => {
+    if (!editableReport) return;
+    const newIssues = editableReport.issues.filter((_, i) => i !== index);
+    setEditableReport((prev) => (prev ? { ...prev, issues: newIssues } : prev));
+  };
+
+  const addImprovement = (issueIdx: number) => {
+    if (!editableReport) return;
+    const newIssues = [...editableReport.issues];
+    const newImp = { action: "", owner: "", timeline: "", method: "", expectedOutcome: "" };
+    newIssues[issueIdx] = { ...newIssues[issueIdx], improvements: [...(newIssues[issueIdx].improvements || []), newImp] };
+    setEditableReport((prev) => (prev ? { ...prev, issues: newIssues } : prev));
+  };
+
+  const removeImprovement = (issueIdx: number, impIdx: number) => {
+    if (!editableReport) return;
+    const newIssues = [...editableReport.issues];
+    newIssues[issueIdx] = { ...newIssues[issueIdx], improvements: newIssues[issueIdx].improvements.filter((_, i) => i !== impIdx) };
+    setEditableReport((prev) => (prev ? { ...prev, issues: newIssues } : prev));
+  };
+
   const updateIssueField = (issueIdx: number, field: string, value: string) => {
     if (!editableReport) return;
     const newIssues = [...editableReport.issues];
@@ -157,6 +195,12 @@ export default function Home() {
         onUpdateImprovement={updateImprovement}
         onUpdateScore={updateScore}
         onUpdateGrade={updateGrade}
+        onAddPositive={addPositive}
+        onRemovePositive={removePositive}
+        onAddIssue={addIssue}
+        onRemoveIssue={removeIssue}
+        onAddImprovement={addImprovement}
+        onRemoveImprovement={removeImprovement}
       />
     );
   }

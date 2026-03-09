@@ -11,9 +11,12 @@ interface IssueCardProps {
   onUpdateImprovement: (issueIdx: number, impIdx: number, field: keyof Improvement, value: string) => void;
   forceOpen?: boolean;
   isEditing?: boolean;
+  onRemoveIssue?: (index: number) => void;
+  onAddImprovement?: (issueIdx: number) => void;
+  onRemoveImprovement?: (issueIdx: number, impIdx: number) => void;
 }
 
-export default function IssueCard({ issue, index, severity, onUpdateIssue, onUpdateImprovement, forceOpen = false, isEditing = false }: IssueCardProps) {
+export default function IssueCard({ issue, index, severity, onUpdateIssue, onUpdateImprovement, forceOpen = false, isEditing = false, onRemoveIssue, onAddImprovement, onRemoveImprovement }: IssueCardProps) {
   const [open, setOpen] = useState(true);
   const isOpen = forceOpen || open;
 
@@ -33,17 +36,25 @@ export default function IssueCard({ issue, index, severity, onUpdateIssue, onUpd
           </div>
         </div>
         <span className={`text-gray-400 transition-transform duration-200 shrink-0 mt-1 no-print ${isOpen ? "rotate-180" : ""}`}>▼</span>
+        {isEditing && onRemoveIssue && (
+          <span onClick={(e) => { e.stopPropagation(); onRemoveIssue(index); }}
+            className="text-red-400 hover:text-red-600 text-lg cursor-pointer shrink-0 mt-1 print:hidden">×</span>
+        )}
       </button>
 
       {isOpen && Array.isArray(issue.improvements) && issue.improvements.length > 0 && (
         <div className="border-t border-gray-100 bg-gradient-to-br from-orange-50/50 to-amber-50/50 p-5 space-y-4">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">改善施策</p>
-          {issue.improvements.map((imp, j) => (
+          {(issue.improvements || []).map((imp, j) => (
             <div key={j} className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm space-y-3">
               <div className="flex items-center gap-2 mb-1">
                 <span className="bg-gradient-to-r from-orange-500 to-rose-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
                   施策 {j + 1}
                 </span>
+                {isEditing && onRemoveImprovement && (
+                  <button onClick={() => onRemoveImprovement(index, j)}
+                    className="text-red-400 hover:text-red-600 text-sm cursor-pointer print:hidden">× 削除</button>
+                )}
               </div>
               {isEditing ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -99,6 +110,12 @@ export default function IssueCard({ issue, index, severity, onUpdateIssue, onUpd
               )}
             </div>
           ))}
+          {isEditing && onAddImprovement && (
+            <button onClick={() => onAddImprovement(index)}
+              className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm font-medium cursor-pointer py-2 print:hidden">
+              + 施策を追加
+            </button>
+          )}
         </div>
       )}
     </div>

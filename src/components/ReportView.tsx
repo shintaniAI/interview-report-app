@@ -17,6 +17,12 @@ interface ReportViewProps {
   onUpdateImprovement: (issueIdx: number, impIdx: number, field: keyof Improvement, value: string) => void;
   onUpdateScore: (scoreKey: string, newScore: number) => void;
   onUpdateGrade: (grade: string) => void;
+  onAddPositive: () => void;
+  onRemovePositive: (index: number) => void;
+  onAddIssue: () => void;
+  onRemoveIssue: (index: number) => void;
+  onAddImprovement: (issueIdx: number) => void;
+  onRemoveImprovement: (issueIdx: number, impIdx: number) => void;
 }
 
 export default function ReportView({
@@ -29,6 +35,12 @@ export default function ReportView({
   onUpdateImprovement,
   onUpdateScore,
   onUpdateGrade,
+  onAddPositive,
+  onRemovePositive,
+  onAddIssue,
+  onRemoveIssue,
+  onAddImprovement,
+  onRemoveImprovement,
 }: ReportViewProps) {
   const reportRef = useRef<HTMLDivElement>(null);
   const [isEditing, setIsEditing] = useState(true);
@@ -234,13 +246,24 @@ export default function ReportView({
                 <li key={i} className="flex items-center gap-3 bg-emerald-50/50 border border-emerald-100 rounded-xl px-4 py-2.5 print:bg-transparent">
                   <span className="w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs shrink-0">✓</span>
                   {isEditing ? (
-                    <input type="text" value={item} onChange={(e) => onUpdatePositive(i, e.target.value)}
-                      className="flex-1 bg-orange-50/30 border border-orange-200 rounded-lg px-2 py-1 text-gray-700 focus:ring-2 focus:ring-orange-500/20 print:border-0 print:bg-transparent print:p-0" />
+                    <>
+                      <input type="text" value={item} onChange={(e) => onUpdatePositive(i, e.target.value)}
+                        className="flex-1 bg-orange-50/30 border border-orange-200 rounded-lg px-2 py-1 text-gray-700 focus:ring-2 focus:ring-orange-500/20 print:border-0 print:bg-transparent print:p-0" />
+                      <button onClick={() => onRemovePositive(i)} className="text-red-400 hover:text-red-600 text-lg cursor-pointer shrink-0 print:hidden">×</button>
+                    </>
                   ) : (
                     <span className="flex-1 text-gray-700">{item}</span>
                   )}
                 </li>
               ))}
+              {isEditing && (
+                <li className="print:hidden">
+                  <button onClick={onAddPositive}
+                    className="flex items-center gap-2 text-emerald-600 hover:text-emerald-800 text-sm font-medium cursor-pointer px-4 py-2">
+                    + 項目を追加
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
 
@@ -254,8 +277,15 @@ export default function ReportView({
               {(Array.isArray(r.issues) ? r.issues : []).map((issue, i) => {
                 const sev = SEVERITY_LABELS[issue.severity] || SEVERITY_LABELS.medium;
                 return <IssueCard key={i} issue={issue} index={i} severity={sev}
-                  onUpdateIssue={onUpdateIssueField} onUpdateImprovement={onUpdateImprovement} isEditing={isEditing} />;
+                  onUpdateIssue={onUpdateIssueField} onUpdateImprovement={onUpdateImprovement} isEditing={isEditing}
+                  onRemoveIssue={onRemoveIssue} onAddImprovement={onAddImprovement} onRemoveImprovement={onRemoveImprovement} />;
               })}
+              {isEditing && (
+                <button onClick={onAddIssue}
+                  className="flex items-center gap-2 text-rose-600 hover:text-rose-800 text-sm font-medium cursor-pointer px-1 py-2 print:hidden">
+                  + 課題を追加
+                </button>
+              )}
             </div>
           </div>
 
