@@ -25,12 +25,7 @@ export default function InputForm({ form, error, onUpdateForm, onSubmit, onShowH
             入社後面談レポート作成
           </h1>
           <p className="text-gray-500 mt-2">面談内容を入力してレポートを自動生成します</p>
-          {onShowHistory && (
-            <button onClick={onShowHistory}
-              className="mt-3 inline-flex items-center gap-1.5 text-orange-600 hover:text-orange-700 text-sm font-medium transition-colors cursor-pointer">
-              レポート履歴を見る
-            </button>
-          )}
+{/* history button moved to bottom */}
         </div>
 
         {error && (
@@ -154,6 +149,15 @@ export default function InputForm({ form, error, onUpdateForm, onSubmit, onShowH
             レポートを生成する
           </button>
         </div>
+
+        {onShowHistory && (
+          <div className="text-center mt-6">
+            <button onClick={onShowHistory}
+              className="inline-flex items-center gap-1.5 text-orange-600 hover:text-orange-700 text-sm font-medium transition-colors cursor-pointer">
+              📂 過去レポートを見る
+            </button>
+          </div>
+        )}
 
         <p className="text-center text-xs text-gray-400 mt-6">© 202 - 面談レポート作成ツール</p>
       </div>
