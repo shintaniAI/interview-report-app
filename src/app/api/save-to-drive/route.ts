@@ -85,7 +85,7 @@ function generateHtml(form: FormData, report: ReportData): string {
   const gradeLabels: Record<string, string> = { A: "概ね順調", B: "要フォロー", C: "早期対応推奨" };
   const scoreLabels: Record<string, string> = {
     engagement: "エンゲージメント", workAdaptation: "業務適応", wlb: "WLB適応",
-    expectationGap: "期待値ギャップ", turnoverRisk: "早期離職リスク", growth: "成長意欲・キャリア"
+    expectationGap: "期待値ギャップ", growth: "成長意欲・キャリア"
   };
 
   const grade = report.overallGrade || "-";

@@ -80,11 +80,6 @@ ${memo || "なし"}
       "comment": "一言コメント",
       "evidence": [同上の形式]
     },
-    "turnoverRisk": {
-      "score": 1-5の数値(高いほどリスク低い),
-      "comment": "一言コメント",
-      "evidence": [同上の形式]
-    },
     "growth": {
       "score": 1-5の数値,
       "comment": "一言コメント",
@@ -96,9 +91,9 @@ ${memo || "なし"}
     "workAdaptation": 1-5の数値,
     "wlb": 1-5の数値,
     "expectationGap": 1-5の数値,
-    "turnoverRisk": 1-5の数値,
     "growth": 1-5の数値
   },
+  "totalScore": 5項目の合計点（5〜25）,
   "overallGrade": "A or B or C",
   "overallGradeReason": "総合評価の理由（1〜2文）",
   "retention": "定着・モチベーション状況の詳細分析（2〜4文）",
@@ -138,10 +133,13 @@ ${memo || "なし"}
 - 各スコアのevidenceは1〜3件程度記載してください
 - issuesは面談から読み取れる課題を2〜5件抽出し、それぞれに具体的な改善策を提示してください
 - 改善策は「シートを作成する」「週次MTGを設ける」「1on1の頻度を変える」など仕組みとして実行可能なレベルで具体化してください
-- radarScoresは6項目すべて1-5の数値で記載（レーダーチャート描画用）
+- radarScoresは5項目すべて1-5の数値で記載（レーダーチャート描画用）
 - growthは「成長意欲・キャリア展望」として評価してください
 - スコアは1(懸念)〜5(良好)で評価してください
-- 総合評価はA(概ね順調)、B(要フォロー)、C(早期対応推奨)で判定してください
+- totalScoreは5項目（engagement, workAdaptation, wlb, expectationGap, growth）のスコア合計（5〜25点）を算出してください
+- overallGradeはtotalScoreに基づき判定: 20点以上→A（概ね順調）、15〜19点→B（要フォロー）、14点以下→C（早期対応推奨）
+- issuesのseverity判定基準: high=離職リスクや業務継続に直結する課題、medium=放置すると悪化する可能性がある課題、low=改善推奨だが緊急性は低い
+- evidenceのquote以外の全テキスト（summary, retention, workAdaptation, workLifeBalance, compensationConcerns, relationships, issues.issue, improvements各項目, positives）は口語をそのまま使わず、読みやすい文語体の日本語に整えて出力してください。quoteのみ原文そのまま引用してください
 - JSONのみを出力し、それ以外のテキストは含めないでください`;
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });

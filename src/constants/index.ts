@@ -3,7 +3,6 @@ export const SCORE_LABELS: Record<string, string> = {
   workAdaptation: "業務適応",
   wlb: "WLB適応",
   expectationGap: "期待値ギャップ",
-  turnoverRisk: "早期離職リスク",
   growth: "成長意欲・キャリア",
 };
 
@@ -12,7 +11,6 @@ export const SCORE_ICONS: Record<string, string> = {
   workAdaptation: "",
   wlb: "",
   expectationGap: "",
-  turnoverRisk: "",
   growth: "",
 };
 
@@ -45,6 +43,5 @@ export const RADAR_LABELS = [
   { key: "workAdaptation", label: "業務適応" },
   { key: "wlb", label: "WLB" },
   { key: "expectationGap", label: "期待値一致" },
-  { key: "turnoverRisk", label: "定着度" },
   { key: "growth", label: "成長意欲" },
 ];

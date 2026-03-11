@@ -32,7 +32,6 @@ export interface Report {
     workAdaptation: ScoreDetail;
     wlb: ScoreDetail;
     expectationGap: ScoreDetail;
-    turnoverRisk: ScoreDetail;
     growth: ScoreDetail;
   };
   radarScores: {
@@ -40,9 +39,9 @@ export interface Report {
     workAdaptation: number;
     wlb: number;
     expectationGap: number;
-    turnoverRisk: number;
     growth: number;
   };
+  totalScore: number;
   overallGrade: string;
   overallGradeReason: string;
   retention: string;

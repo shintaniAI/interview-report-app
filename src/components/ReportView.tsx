@@ -165,7 +165,9 @@ export default function ReportView({
               </div>
             )}
             <div className="flex-1">
-              <p className="text-xl font-bold text-gray-800">総合評価: {GRADE_LABELS[r.overallGrade] || r.overallGrade}</p>
+              <p className="text-xl font-bold text-gray-800">総合評価: {GRADE_LABELS[r.overallGrade] || r.overallGrade}
+                {r.totalScore != null && <span className="ml-3 text-base font-semibold text-gray-500">({r.totalScore}/25点)</span>}
+              </p>
               {isEditing ? (
                 <textarea value={r.overallGradeReason} onChange={(e) => onUpdateReportField("overallGradeReason", e.target.value)}
                   className="text-sm text-gray-600 w-full bg-orange-50/30 border border-orange-200 rounded-lg p-2 focus:ring-2 focus:ring-orange-500/20 resize-none mt-2 print:border-0 print:bg-transparent print:p-0" rows={2} />
