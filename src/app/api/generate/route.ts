@@ -25,7 +25,6 @@ export async function POST(req: NextRequest) {
       memo,
       placement,
       jobDescription,
-      previousReport,
       companyValues,
     } = body;
 
@@ -39,7 +38,6 @@ export async function POST(req: NextRequest) {
 - 面談担当者: ${interviewer}
 ${placement ? `- 配属先情報: ${placement}` : ""}
 ${jobDescription ? `- 求人票/期待役割: ${jobDescription}` : ""}
-${previousReport ? `- 前回面談レポート: ${previousReport}` : ""}
 ${companyValues ? `- 会社のMVV/行動指針: ${companyValues}` : ""}
 
 ## 面談内容（文字起こし）

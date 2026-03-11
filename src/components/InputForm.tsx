@@ -131,11 +131,6 @@ export default function InputForm({ form, error, onUpdateForm, onSubmit, onShowH
                     className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-400 transition-all" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1.5">前回面談レポート</label>
-                  <textarea value={form.previousReport} onChange={(e) => onUpdateForm("previousReport", e.target.value)} rows={3}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-400 transition-all" />
-                </div>
-                <div>
                   <label className="block text-sm font-medium text-gray-600 mb-1.5">会社のMVV / 行動指針</label>
                   <textarea value={form.companyValues} onChange={(e) => onUpdateForm("companyValues", e.target.value)} rows={3}
                     className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-400 transition-all" />

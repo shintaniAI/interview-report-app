@@ -64,6 +64,5 @@ export interface FormData {
   memo: string;
   placement: string;
   jobDescription: string;
-  previousReport: string;
   companyValues: string;
 }

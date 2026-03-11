@@ -24,7 +24,6 @@ export default function Home() {
     memo: "",
     placement: "",
     jobDescription: "",
-    previousReport: "",
     companyValues: "",
   });
 

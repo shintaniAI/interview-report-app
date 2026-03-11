@@ -82,6 +82,7 @@ async function getAccessToken(): Promise<string> {
 
 function generateHtml(form: FormData, report: ReportData): string {
   const gradeColors: Record<string, string> = { A: "#059669", B: "#d97706", C: "#e11d48" };
+  const gradeBgColors: Record<string, string> = { A: "#ecfdf5", B: "#fffbeb", C: "#fff1f2" };
   const gradeLabels: Record<string, string> = { A: "概ね順調", B: "要フォロー", C: "早期対応推奨" };
   const scoreLabels: Record<string, string> = {
     engagement: "エンゲージメント", workAdaptation: "業務適応", wlb: "WLB適応",
@@ -90,65 +91,85 @@ function generateHtml(form: FormData, report: ReportData): string {
 
   const grade = report.overallGrade || "-";
   const gradeColor = gradeColors[grade] || "#666";
+  const gradeBg = gradeBgColors[grade] || "#f9fafb";
   const gradeLabel = gradeLabels[grade] || grade;
 
+  const logoUrl = "https://interview-report-app-yugos-projects-035e9af8.vercel.app/logo-202.png";
+
+  // Score table using simple table layout for Google Docs compatibility
   let scoresHtml = "";
   if (report.scores) {
+    scoresHtml = `<table style="width:100%;border-collapse:collapse;margin:16px 0;">
+      <tr style="background:#f9fafb;">
+        <td style="border:1px solid #d1d5db;padding:8px 12px;font-weight:bold;width:180px;">項目</td>
+        <td style="border:1px solid #d1d5db;padding:8px 12px;font-weight:bold;width:60px;text-align:center;">スコア</td>
+        <td style="border:1px solid #d1d5db;padding:8px 12px;font-weight:bold;">コメント</td>
+      </tr>`;
     for (const [key, val] of Object.entries(report.scores)) {
       const label = scoreLabels[key] || key;
       const score = val?.score || 0;
       const comment = val?.comment || "";
-      const colors = ["#f43f5e", "#f97316", "#f59e0b", "#84cc16", "#10b981"];
-      const bars = Array.from({ length: 5 }, (_, i) => {
-        const bg = i < score ? colors[score - 1] : "#e5e7eb";
-        return `<span style="display:inline-block;width:18px;height:18px;border-radius:3px;background:${bg};margin-right:2px;"></span>`;
-      }).join("");
+      const scoreDisplay = "★".repeat(score) + "☆".repeat(5 - score);
+      scoresHtml += `<tr>
+        <td style="border:1px solid #d1d5db;padding:8px 12px;font-weight:bold;">${label}</td>
+        <td style="border:1px solid #d1d5db;padding:8px 12px;text-align:center;font-size:12px;">${score}/5</td>
+        <td style="border:1px solid #d1d5db;padding:8px 12px;font-size:13px;color:#4b5563;">${scoreDisplay} ${comment}</td>
+      </tr>`;
 
-      let evidenceHtml = "";
+      // Evidence rows
       if (val?.evidence && val.evidence.length > 0) {
-        evidenceHtml = '<div style="margin-top:8px;padding:8px 12px;background:#fefce8;border-left:3px solid #f59e0b;border-radius:0 6px 6px 0;font-size:12px;">';
         for (const ev of val.evidence) {
-          evidenceHtml += `<p style="margin:4px 0;"><strong>Q:</strong> ${ev.question}</p>`;
-          evidenceHtml += `<p style="margin:4px 0;font-style:italic;">「${ev.quote}」</p>`;
-          evidenceHtml += `<p style="margin:4px 0;color:#666;">→ ${ev.interpretation}</p>`;
+          scoresHtml += `<tr>
+            <td style="border:1px solid #d1d5db;padding:6px 12px;background:#fefce8;" colspan="3">
+              <span style="font-size:12px;"><strong>Q:</strong> ${ev.question}</span><br/>
+              <span style="font-size:12px;font-style:italic;">「${ev.quote}」</span><br/>
+              <span style="font-size:12px;color:#666;">→ ${ev.interpretation}</span>
+            </td>
+          </tr>`;
         }
-        evidenceHtml += "</div>";
       }
-
-      scoresHtml += `<div style="padding:8px 0;border-bottom:1px solid #f3f4f6;">
-        <strong>${label}</strong> ${bars} <span style="color:#666;font-size:13px;">${comment}</span>
-        ${evidenceHtml}
-      </div>`;
     }
+    scoresHtml += "</table>";
   }
 
-  const positivesHtml = (report.positives || []).map(p => `<li style="padding:4px 0;">✓ ${p}</li>`).join("");
+  const positivesHtml = (report.positives || []).map((p, i) =>
+    `<tr><td style="border:1px solid #d1d5db;padding:6px 12px;width:30px;text-align:center;background:#ecfdf5;color:#059669;font-weight:bold;">✓</td><td style="border:1px solid #d1d5db;padding:6px 12px;font-size:13px;">${p}</td></tr>`
+  ).join("");
 
   let issuesHtml = "";
   if (report.issues) {
-    for (const issue of report.issues) {
-      const sevColors: Record<string, string> = { high: "#e11d48", medium: "#d97706", low: "#2563eb" };
+    for (let idx = 0; idx < report.issues.length; idx++) {
+      const issue = report.issues[idx];
       const sevLabels: Record<string, string> = { high: "重要", medium: "注意", low: "軽微" };
-      const sevColor = sevColors[issue.severity] || "#666";
+      const sevColors: Record<string, string> = { high: "#e11d48", medium: "#d97706", low: "#2563eb" };
+      const sevBg: Record<string, string> = { high: "#fff1f2", medium: "#fffbeb", low: "#eff6ff" };
       const sevLabel = sevLabels[issue.severity] || issue.severity;
+      const sevColor = sevColors[issue.severity] || "#666";
 
-      let impsHtml = "";
+      issuesHtml += `<table style="width:100%;border-collapse:collapse;margin:12px 0;">
+        <tr>
+          <td style="border:1px solid #d1d5db;padding:8px 12px;background:${sevBg[issue.severity] || "#f9fafb"};" colspan="2">
+            <strong style="color:${sevColor};">[${sevLabel}]</strong> ${issue.issue}
+          </td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #d1d5db;padding:6px 12px;background:#fefce8;font-size:12px;font-style:italic;" colspan="2">「${issue.quote}」</td>
+        </tr>`;
+
       if (issue.improvements) {
         for (let j = 0; j < issue.improvements.length; j++) {
           const imp = issue.improvements[j];
-          impsHtml += `<div style="margin-top:8px;padding:8px 12px;background:#eff6ff;border-radius:6px;font-size:13px;">
-            <strong>施策 ${j + 1}:</strong> ${imp.action}<br/>
-            <span style="font-size:12px;color:#666;">担当: ${imp.owner} | 時期: ${imp.timeline}<br/>方法: ${imp.method}<br/>効果: ${imp.expectedOutcome}</span>
-          </div>`;
+          issuesHtml += `<tr>
+            <td style="border:1px solid #d1d5db;padding:6px 12px;background:#eff6ff;" colspan="2">
+              <strong style="font-size:13px;">施策 ${j + 1}: ${imp.action}</strong><br/>
+              <span style="font-size:12px;color:#4b5563;">担当: ${imp.owner} ｜ 時期: ${imp.timeline}</span><br/>
+              <span style="font-size:12px;color:#4b5563;">方法: ${imp.method}</span><br/>
+              <span style="font-size:12px;color:#4b5563;">効果: ${imp.expectedOutcome}</span>
+            </td>
+          </tr>`;
         }
       }
-
-      issuesHtml += `<div style="margin-bottom:16px;padding:12px;border:1px solid #e5e7eb;border-radius:8px;">
-        <span style="background:${sevColor};color:white;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:bold;">${sevLabel}</span>
-        <strong style="margin-left:8px;">${issue.issue}</strong>
-        <div style="margin-top:8px;padding:6px 12px;background:#fefce8;border-left:3px solid #f59e0b;border-radius:0 6px 6px 0;font-size:12px;font-style:italic;">「${issue.quote}」</div>
-        ${impsHtml}
-      </div>`;
+      issuesHtml += "</table>";
     }
   }
 
@@ -159,33 +180,52 @@ function generateHtml(form: FormData, report: ReportData): string {
     { title: "評価・給与への理解や不安", content: report.compensationConcerns },
     { title: "人間関係・コミュニケーション", content: report.relationships },
   ].filter(s => s.content).map(s =>
-    `<h3 style="margin-top:20px;color:#374151;font-size:15px;">${s.title}</h3>
-     <p style="color:#4b5563;line-height:1.7;">${s.content}</p>`
+    `<table style="width:100%;border-collapse:collapse;margin:16px 0;">
+      <tr><td style="border:1px solid #d1d5db;padding:8px 12px;background:#f9fafb;font-weight:bold;font-size:14px;">${s.title}</td></tr>
+      <tr><td style="border:1px solid #d1d5db;padding:10px 12px;font-size:13px;color:#4b5563;line-height:1.8;">${s.content}</td></tr>
+    </table>`
   ).join("");
 
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
-body{font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;max-width:800px;margin:0 auto;padding:24px;color:#1f2937;font-size:14px;line-height:1.6;}
-h1{font-size:22px;margin-bottom:4px;}
-h2{font-size:17px;border-bottom:2px solid #f97316;padding-bottom:6px;margin-top:28px;color:#1f2937;}
-table{width:100%;border-collapse:collapse;margin:16px 0;}
-td{padding:6px 10px;border:1px solid #e5e7eb;font-size:13px;}
+  // Overall grade as table for Google Docs compatibility
+  const gradeHtml = `<table style="width:100%;border-collapse:collapse;margin:16px 0;">
+    <tr>
+      <td style="border:2px solid ${gradeColor};padding:12px 16px;width:80px;text-align:center;background:${gradeColor};color:white;font-size:32px;font-weight:bold;">${grade}</td>
+      <td style="border:2px solid ${gradeColor};padding:12px 16px;background:${gradeBg};">
+        <strong style="font-size:16px;">総合評価: ${gradeLabel}</strong><br/>
+        <span style="font-size:13px;color:#4b5563;">${report.overallGradeReason || ""}</span>
+      </td>
+    </tr>
+  </table>`;
+
+  return `<!DOCTYPE html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{font-family:'Noto Sans JP','Hiragino Kaku Gothic ProN',sans-serif;max-width:760px;margin:0 auto;padding:32px;color:#1f2937;font-size:14px;line-height:1.7;}
+h1{font-size:22px;margin-bottom:4px;color:#1f2937;}
+h2{font-size:16px;border-bottom:2px solid #f97316;padding-bottom:6px;margin-top:28px;margin-bottom:12px;color:#1f2937;}
+table{width:100%;border-collapse:collapse;margin:12px 0;table-layout:fixed;}
+td{padding:8px 12px;border:1px solid #d1d5db;font-size:13px;word-wrap:break-word;}
 </style></head><body>
-<h1>入社後面談レポート</h1>
-<table>
-<tr><td style="background:#f9fafb;width:80px;color:#9ca3af;">社員名</td><td><strong>${form.candidateName}</strong></td><td style="background:#f9fafb;width:80px;color:#9ca3af;">所属</td><td>${form.department || "-"}</td></tr>
-<tr><td style="background:#f9fafb;color:#9ca3af;">職種</td><td>${form.jobTitle || "-"}</td><td style="background:#f9fafb;color:#9ca3af;">入社日</td><td>${form.hireDate || "-"}</td></tr>
-<tr><td style="background:#f9fafb;color:#9ca3af;">面談日</td><td>${form.interviewDate || "-"}</td><td style="background:#f9fafb;color:#9ca3af;">担当者</td><td>${form.interviewer || "-"}</td></tr>
-</table>
-<div style="display:flex;align-items:center;gap:16px;padding:16px;border-radius:12px;border:1px solid ${gradeColor}33;background:${gradeColor}0d;">
-<div style="width:56px;height:56px;border-radius:12px;background:${gradeColor};display:flex;align-items:center;justify-content:center;color:white;font-size:28px;font-weight:bold;">${grade}</div>
-<div><strong style="font-size:17px;">総合評価: ${gradeLabel}</strong><p style="margin:4px 0;color:#4b5563;font-size:13px;">${report.overallGradeReason || ""}</p></div>
+<div style="margin-bottom:16px;">
+  <img src="${logoUrl}" alt="202" style="height:40px;width:auto;" />
 </div>
+<h1>入社後面談レポート</h1>
+<table style="width:100%;border-collapse:collapse;margin:16px 0;table-layout:fixed;">
+<tr><td style="background:#f9fafb;width:80px;color:#6b7280;font-weight:bold;">社員名</td><td><strong>${form.candidateName}</strong></td><td style="background:#f9fafb;width:80px;color:#6b7280;font-weight:bold;">所属</td><td>${form.department || "-"}</td></tr>
+<tr><td style="background:#f9fafb;color:#6b7280;font-weight:bold;">職種</td><td>${form.jobTitle || "-"}</td><td style="background:#f9fafb;color:#6b7280;font-weight:bold;">入社日</td><td>${form.hireDate || "-"}</td></tr>
+<tr><td style="background:#f9fafb;color:#6b7280;font-weight:bold;">面談日</td><td>${form.interviewDate || "-"}</td><td style="background:#f9fafb;color:#6b7280;font-weight:bold;">担当者</td><td>${form.interviewer || "-"}</td></tr>
+</table>
+${gradeHtml}
 <h2>スコア一覧</h2>${scoresHtml}
-<h2>面談サマリー</h2><p style="color:#4b5563;line-height:1.7;">${report.summary || ""}</p>
+<h2>面談サマリー</h2>
+<table style="width:100%;border-collapse:collapse;margin:12px 0;">
+<tr><td style="border:1px solid #d1d5db;padding:10px 12px;font-size:13px;color:#4b5563;line-height:1.8;">${report.summary || ""}</td></tr>
+</table>
 ${sections}
-<h2>良かった点・強み</h2><ul style="list-style:none;padding:0;">${positivesHtml}</ul>
+<h2>良かった点・強み</h2>
+<table style="width:100%;border-collapse:collapse;margin:12px 0;">${positivesHtml}</table>
 <h2>課題と改善策</h2>${issuesHtml}
-<div style="margin-top:30px;padding-top:12px;border-top:1px solid #e5e7eb;text-align:right;font-size:11px;color:#9ca3af;">
+<div style="margin-top:30px;padding-top:12px;border-top:1px solid #d1d5db;text-align:right;font-size:11px;color:#9ca3af;">
 <p>作成日時: ${new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}</p>
 <p>作成者: ${form.interviewer || "-"}</p>
 </div></body></html>`;
