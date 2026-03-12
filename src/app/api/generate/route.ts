@@ -58,7 +58,7 @@ ${memo || "なし"}
       "evidence": [
         {
           "question": "この評価に関連する質問や話題",
-          "quote": "面談中の実際の発言を引用（なるべく原文のまま）",
+          "quote": "面談中の該当発言の要旨（口語をそのまま転記せず、読みやすい文語体の日本語に整えて記載）",
           "interpretation": "この発言からどう評価したかの解釈"
         }
       ]
@@ -103,7 +103,7 @@ ${memo || "なし"}
   "issues": [
     {
       "issue": "特定された課題（具体的に）",
-      "quote": "課題の根拠となる面談中の発言",
+      "quote": "課題の根拠となる面談中の発言（口語をそのまま転記せず、読みやすい文語体の日本語に整えて記載）",
       "severity": "high or medium or low",
       "improvements": [
         {
@@ -121,13 +121,13 @@ ${memo || "なし"}
 【最重要ルール】
 - 入力された面談内容（文字起こし・メモ）に記載されている情報のみを使用してください
 - 文字起こしに書かれていない内容を推測・創作・捏造しないでください
-- evidenceのquoteは必ず文字起こしテキストに実際に含まれている発言をそのまま引用してください。存在しない発言を作らないでください
+- evidenceのquoteは文字起こしテキストの実際の発言内容に基づき、意味を変えずに読みやすい文語体の日本語に整えて記載してください。存在しない発言を作らないでください
 - 文字起こしの内容が不十分で評価できない項目がある場合、scoreを3（判断材料不足）とし、commentに「面談内容から十分な情報が得られませんでした」と記載してください
 - issuesも文字起こしの中で実際に言及された内容からのみ抽出してください
 - positivesも実際の発言内容に基づくもののみ記載してください
 
 注意事項:
-- evidenceのquoteは面談の文字起こしから実際の発言を引用してください。「」で囲って原文そのまま記載（言い換え・要約禁止）
+- evidenceのquoteは面談の文字起こしの実際の発言内容に基づき、口語をそのまま転記せず読みやすい文語体の日本語に整えて記載してください（意味は変えない。捏造禁止）
 - 各スコアのevidenceは1〜3件程度記載してください
 - issuesは面談から読み取れる課題を2〜5件抽出し、それぞれに具体的な改善策を提示してください
 - 改善策は「シートを作成する」「週次MTGを設ける」「1on1の頻度を変える」など仕組みとして実行可能なレベルで具体化してください
@@ -137,7 +137,7 @@ ${memo || "なし"}
 - totalScoreは5項目（engagement, workAdaptation, wlb, expectationGap, growth）のスコア合計（5〜25点）を算出してください
 - overallGradeはtotalScoreに基づき判定: 20点以上→A（概ね順調）、15〜19点→B（要フォロー）、14点以下→C（早期対応推奨）
 - issuesのseverity判定基準: high=離職リスクや業務継続に直結する課題、medium=放置すると悪化する可能性がある課題、low=改善推奨だが緊急性は低い
-- evidenceのquote以外の全テキスト（summary, retention, workAdaptation, workLifeBalance, compensationConcerns, relationships, issues.issue, improvements各項目, positives）は口語をそのまま使わず、読みやすい文語体の日本語に整えて出力してください。quoteのみ原文そのまま引用してください
+- 全テキスト（summary, retention, workAdaptation, workLifeBalance, compensationConcerns, relationships, issues.issue, improvements各項目, positives, evidenceのquote含む）は口語をそのまま使わず、読みやすい文語体の日本語に整えて出力してください
 - JSONのみを出力し、それ以外のテキストは含めないでください`;
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
