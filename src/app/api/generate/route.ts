@@ -58,8 +58,8 @@ ${memo || "なし"}
       "evidence": [
         {
           "question": "この評価に関連する質問や話題",
-          "quote": "面談中の該当発言の要旨（口語をそのまま転記せず、読みやすい文語体の日本語に整えて記載）",
-          "interpretation": "この発言からどう評価したかの解釈"
+          "quote": "発言の要旨を端的に1文で（例: 裁量をもっと持ちたい）",
+          "interpretation": "この発言からどう評価したかを端的に1文で"
         }
       ]
     },
@@ -103,7 +103,7 @@ ${memo || "なし"}
   "issues": [
     {
       "issue": "特定された課題（具体的に）",
-      "quote": "課題の根拠となる面談中の発言（口語をそのまま転記せず、読みやすい文語体の日本語に整えて記載）",
+      "quote": "課題の根拠を端的に1文で",
       "severity": "high or medium or low",
       "improvements": [
         {
@@ -137,7 +137,8 @@ ${memo || "なし"}
 - totalScoreは5項目（engagement, workAdaptation, wlb, expectationGap, growth）のスコア合計（5〜25点）を算出してください
 - overallGradeはtotalScoreに基づき判定: 20点以上→A（概ね順調）、15〜19点→B（要フォロー）、14点以下→C（早期対応推奨）
 - issuesのseverity判定基準: high=離職リスクや業務継続に直結する課題、medium=放置すると悪化する可能性がある課題、low=改善推奨だが緊急性は低い
-- 全テキスト（summary, retention, workAdaptation, workLifeBalance, compensationConcerns, relationships, issues.issue, improvements各項目, positives, evidenceのquote含む）は口語をそのまま使わず、読みやすい文語体の日本語に整えて出力してください
+- 全テキストは口語をそのまま使わず、端的で読みやすい文語体の日本語に整えて出力してください
+- evidenceのquoteとinterpretationは箇条書き的に1文で簡潔に書いてください（長文禁止）
 - JSONのみを出力し、それ以外のテキストは含めないでください`;
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
