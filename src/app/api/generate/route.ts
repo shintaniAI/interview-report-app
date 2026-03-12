@@ -137,8 +137,10 @@ ${memo || "なし"}
 - totalScoreは5項目（engagement, workAdaptation, wlb, expectationGap, growth）のスコア合計（5〜25点）を算出してください
 - overallGradeはtotalScoreに基づき判定: 20点以上→A（概ね順調）、15〜19点→B（要フォロー）、14点以下→C（早期対応推奨）
 - issuesのseverity判定基準: high=離職リスクや業務継続に直結する課題、medium=放置すると悪化する可能性がある課題、low=改善推奨だが緊急性は低い
-- 全テキストは口語をそのまま使わず、端的で読みやすい文語体の日本語に整えて出力してください
+- このレポートはクライアント企業に提出するビジネス文書です。全テキストをクライアント提出に適したフォーマルな文語体で記載してください
+- 口語表現・話し言葉・フィラー（えーと、まあ、〜かな等）は一切使用禁止
 - evidenceのquoteとinterpretationは箇条書き的に1文で簡潔に書いてください（長文禁止）
+- summary, retention, workAdaptation等の分析文も簡潔かつ丁寧語（です・ます調）で統一してください
 - JSONのみを出力し、それ以外のテキストは含めないでください`;
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
