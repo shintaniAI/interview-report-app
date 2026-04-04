@@ -143,8 +143,21 @@ ${memo || "なし"}
 - summary, retention, workAdaptation等の分析文も簡潔かつ丁寧語（です・ます調）で統一してください
 - JSONのみを出力し、それ以外のテキストは含めないでください`;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
-    const result = await model.generateContent(prompt);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
+    let result;
+    try {
+      result = await model.generateContent(prompt);
+    } catch (apiError) {
+      const errMsg = apiError instanceof Error ? apiError.message : String(apiError);
+      console.error("Gemini API call failed:", errMsg);
+      if (errMsg.includes("API key") || errMsg.includes("401") || errMsg.includes("UNAUTHENTICATED")) {
+        return NextResponse.json(
+          { success: false, error: "Gemini APIキーが無効です。Vercelの環境変数 GEMINI_API_KEY を確認してください。" },
+          { status: 500 }
+        );
+      }
+      throw apiError;
+    }
     const text = result.response.text();
 
     // Extract JSON from response (handle markdown code blocks)
